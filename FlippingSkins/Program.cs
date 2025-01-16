@@ -18,7 +18,7 @@ internal class Program
                 switch(key.KeyChar)
                 {
                     case '1':
-                        //scrap
+                        Scrap.SettingFiltr();
                         break;
                     case '2':
                         // info
@@ -28,7 +28,7 @@ internal class Program
                         break;
                 }
 
-
+                Console.Clear();
             }
             catch (Exception ex)
             {
