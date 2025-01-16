@@ -18,7 +18,7 @@ internal class Program
                 switch(key.KeyChar)
                 {
                     case '1':
-                        Scrap.SettingFiltr();
+                        LoginWebsites.CreatingWeb();
                         break;
                     case '2':
                         // info
