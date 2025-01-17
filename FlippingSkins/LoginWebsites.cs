@@ -7,14 +7,17 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using OpenQA.Selenium.Interactions;
+using System.Runtime.CompilerServices;
 
 namespace FlippingSkins
 {
     internal static class LoginWebsites
     {
         private static ChromeOptions options = new ChromeOptions();
-        public static void CreatingWeb()
+        private static ConfigInformation? configInformation;
+        public static void CreatingWeb(ConfigInformation config)
         {
+            configInformation = config;
             options.AddArgument("--disable-blink-features=AutomationControlled");
             options.AddExcludedArgument("enable-automation");
             options.AddAdditionalOption("useAutomationExtension", false);
@@ -56,10 +59,10 @@ namespace FlippingSkins
             try
             {
                 var login = wait.Until(driver => driver.FindElement(By.XPath("//input[@type='text'][@class='_2GBWeup5cttgbTw8FM3tfx']")));
-                login.SendKeys("");
+                login.SendKeys(configInformation.loginToSteam);
 
                 var password = wait.Until(driver => driver.FindElement(By.XPath("//input[@type='password'][@class='_2GBWeup5cttgbTw8FM3tfx']")));
-                password.SendKeys("");
+                password.SendKeys(configInformation.passwordToSteam);
 
                 var loginButton = wait.Until(driver => driver.FindElement(By.XPath("//button[@class='DjSvCZoKKfoNSmarsEcTS']")));
                 Actions actions = new Actions(driver);
@@ -92,14 +95,14 @@ namespace FlippingSkins
             clickButton.MoveToElement(enterLogin).Click().Perform();
 
             var email = wait.Until(gmail => gmail.FindElement(By.XPath("//input[@class='whsOnd zHQkBf']")));
-            email.SendKeys("");
+            email.SendKeys(configInformation.loginToGmail);
 
             var enterEmail = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
             clickButton.MoveToElement(enterEmail).Click().Perform();
 
             Thread.Sleep(5000);
             var password = wait.Until(gmail => gmail.FindElement(By.XPath("//input[@class='whsOnd zHQkBf']")));
-            password.SendKeys("");
+            password.SendKeys(configInformation.passwordToGmail);
 
             var enterPassword = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
             clickButton.MoveToElement(enterPassword).Click().Perform();

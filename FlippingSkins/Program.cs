@@ -4,6 +4,8 @@ internal class Program
 {
     private static void Main(string[] args)
     {
+        ConfigInformation configInformation = SettingConfig();
+
         do
         {
             try
@@ -18,7 +20,7 @@ internal class Program
                 switch(key.KeyChar)
                 {
                     case '1':
-                        LoginWebsites.CreatingWeb();
+                        LoginWebsites.CreatingWeb(configInformation);
                         break;
                     case '2':
                         // info
@@ -42,4 +44,7 @@ internal class Program
             }
         }while (true);
     }
+
+    private static ConfigInformation SettingConfig() => new ConfigInformation();
+
 }
