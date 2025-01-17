@@ -6,6 +6,8 @@ internal class Program
     {
         ConfigInformation configInformation = SettingConfig();
 
+        StartInfo();
+
         do
         {
             try
@@ -16,6 +18,7 @@ internal class Program
 
                 Console.Write("\n\n1. Start scraping prices\n2. Informations\n3. Exit\n\nNumber: ");
                 ConsoleKeyInfo key = Console.ReadKey();
+                Console.WriteLine("\n\n");
 
                 switch(key.KeyChar)
                 {
@@ -44,7 +47,13 @@ internal class Program
             }
         }while (true);
     }
-
-    private static ConfigInformation SettingConfig() => new ConfigInformation();
+    
+    private static void StartInfo()
+    {
+        Console.WriteLine("You can only turn on the application once every 10 minutes. If you decide to use it earlier, it may crash.");
+        Console.WriteLine("Click enter to continue");
+        Console.ReadKey();
+    }
+    private static ConfigInformation SettingConfig() => new ConfigInformation("flipingSkins", "vR5QKwJ252H%kpu", "flippingskins@gmail.com", "FlippingSkins123");
 
 }

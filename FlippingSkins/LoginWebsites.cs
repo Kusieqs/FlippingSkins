@@ -69,6 +69,10 @@ namespace FlippingSkins
                 actions.MoveToElement(loginButton).Click().Perform();
 
                 string guard = GmailGuard();
+                configInformation.keyGuard = guard;
+
+                // zalogowanie do steama
+
             }
             catch (WebDriverTimeoutException ex)
             {
@@ -107,7 +111,19 @@ namespace FlippingSkins
             var enterPassword = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
             clickButton.MoveToElement(enterPassword).Click().Perform();
 
-            return null;
+            Thread.Sleep(5000);
+            var enterMessage = wait.Until(gmail => gmail.FindElement(By.XPath("//tr[@class='zA zE']")));
+            clickButton.MoveToElement(enterMessage).Click().Perform();
+
+            var rozwiniecie = wait.Until(gmail => gmail.FindElement(By.XPath("//img[@class='ajT']")));
+            clickButton.MoveToElement(rozwiniecie).Click().Perform();
+
+            var guard = wait.Until(gmail => gmail.FindElement(By.CssSelector("td[style*='font-size:48px'][style*='font-family:Arial']")));
+            string keyGuard = guard.Text;
+
+            gmail.Quit();
+
+            return keyGuard;
         }
     }
 }
