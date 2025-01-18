@@ -41,6 +41,7 @@ namespace FlippingSkins
 
                 Thread.Sleep(2000);
                 LoginToSteam(driver, wait);
+
             }
             catch (WebDriverTimeoutException ex)
             {
@@ -71,8 +72,15 @@ namespace FlippingSkins
                 string guard = GmailGuard();
                 configInformation.keyGuard = guard;
 
-                // zalogowanie do steama
+                for(int i = 0; i < 5; i++)
+                {
+                    var charInput = wait.Until(driver => driver.FindElement(By.CssSelector("input._3xcXqLVteTNHmk-gh9W65d[value='']")));
+                    charInput.SendKeys(guard[i].ToString());
+                }
 
+                Thread.Sleep(3000);
+                var loginIntoSkinsMonkey = wait.Until(driver => driver.FindElement(By.XPath("//input[@class='btn_green_white_innerfade']")));
+                actions.MoveToElement(loginIntoSkinsMonkey).Click().Perform();
             }
             catch (WebDriverTimeoutException ex)
             {
@@ -111,7 +119,7 @@ namespace FlippingSkins
             var enterPassword = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
             clickButton.MoveToElement(enterPassword).Click().Perform();
 
-            Thread.Sleep(5000);
+            Thread.Sleep(4000);
             var enterMessage = wait.Until(gmail => gmail.FindElement(By.XPath("//tr[@class='zA zE']")));
             clickButton.MoveToElement(enterMessage).Click().Perform();
 
