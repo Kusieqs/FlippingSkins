@@ -15,7 +15,7 @@ namespace FlippingSkins
     {
         private static ChromeOptions options = new ChromeOptions();
         private static ConfigInformation? configInformation;
-        public static void CreatingWeb(ConfigInformation config)
+        public static IWebDriver CreatingWeb(ConfigInformation config)
         {
             configInformation = config;
             options.AddArgument("--disable-blink-features=AutomationControlled");
@@ -30,7 +30,7 @@ namespace FlippingSkins
 
             LoginToSkinsMonkey(driver, wait);
 
-
+            return driver;
         }
 
         private static void LoginToSkinsMonkey(IWebDriver driver,WebDriverWait wait)
@@ -44,15 +44,15 @@ namespace FlippingSkins
                 Thread.Sleep(2000);
                 LoginToSteam(driver, wait);
 
-                Thread.Sleep(1000);
+                Thread.Sleep(4000);
                 var sorting = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='form-select__body']")));
-
                 actions.MoveToElement(sorting[3]).Click().Perform();
 
                 Thread.Sleep(500);
                 var clickRust = wait.Until(driver => driver.FindElement(By.XPath("//img[@alt='Rust']")));
                 actions.MoveToElement(clickRust).Click().Perform();
-                
+                Thread.Sleep(1500);
+
             }
             catch (WebDriverTimeoutException ex)
             {
@@ -126,13 +126,16 @@ namespace FlippingSkins
             var enterPassword = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
             clickButton.MoveToElement(enterPassword).Click().Perform();
 
-            Thread.Sleep(4000);
+            Thread.Sleep(4500);
             var enterMessage = wait.Until(gmail => gmail.FindElement(By.XPath("//tr[@class='zA zE']")));
             clickButton.MoveToElement(enterMessage).Click().Perform();
 
             Thread.Sleep(1000);
-            var rozwiniecie = wait.Until(gmail => gmail.FindElement(By.XPath("//img[@class='ajT']")));
-            clickButton.MoveToElement(rozwiniecie).Click().Perform();
+            var elements = gmail.FindElements(By.XPath("//img[@class='ajT']"));
+            if(elements.Count > 0)
+            {
+                clickButton.MoveToElement(elements[0]).Click().Perform();
+            }
 
             Thread.Sleep(500);
             var guard = wait.Until(gmail => gmail.FindElement(By.CssSelector("td[style*='font-size:48px'][style*='font-family:Arial']")));

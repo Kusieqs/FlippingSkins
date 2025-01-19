@@ -1,4 +1,6 @@
 ﻿using FlippingSkins;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 
 internal class Program
 {
@@ -23,7 +25,8 @@ internal class Program
                 switch(key.KeyChar)
                 {
                     case '1':
-                        LoginWebsites.CreatingWeb(configInformation);
+                        IWebDriver driver = LoginWebsites.CreatingWeb(configInformation);
+                        Scrap.ScrapPricesAndNames(driver);
                         break;
                     case '2':
                         // info
