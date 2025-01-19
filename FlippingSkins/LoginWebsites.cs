@@ -29,6 +29,8 @@ namespace FlippingSkins
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
 
             LoginToSkinsMonkey(driver, wait);
+
+
         }
 
         private static void LoginToSkinsMonkey(IWebDriver driver,WebDriverWait wait)
@@ -42,16 +44,23 @@ namespace FlippingSkins
                 Thread.Sleep(2000);
                 LoginToSteam(driver, wait);
 
+                Thread.Sleep(1000);
+                var sorting = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='form-select__body']")));
+
+                actions.MoveToElement(sorting[3]).Click().Perform();
+
+                Thread.Sleep(500);
+                var clickRust = wait.Until(driver => driver.FindElement(By.XPath("//img[@alt='Rust']")));
+                actions.MoveToElement(clickRust).Click().Perform();
+                
             }
             catch (WebDriverTimeoutException ex)
             {
                 Console.WriteLine("Nie udało się załadować strony logowania Steam lub nie znaleziono wymaganych elementów.");
-                driver.Quit();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error " + ex);
-                driver.Quit();
             }
         }
 
@@ -78,19 +87,17 @@ namespace FlippingSkins
                     charInput.SendKeys(guard[i].ToString());
                 }
 
-                Thread.Sleep(3000);
+                Thread.Sleep(2000);
                 var loginIntoSkinsMonkey = wait.Until(driver => driver.FindElement(By.XPath("//input[@class='btn_green_white_innerfade']")));
                 actions.MoveToElement(loginIntoSkinsMonkey).Click().Perform();
             }
             catch (WebDriverTimeoutException ex)
             {
                 Console.WriteLine("Nie udało się załadować strony logowania Steam lub nie znaleziono wymaganych elementów.");
-                driver.Quit();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error " + ex);
-                driver.Quit();
             }
 
         }
@@ -112,7 +119,7 @@ namespace FlippingSkins
             var enterEmail = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
             clickButton.MoveToElement(enterEmail).Click().Perform();
 
-            Thread.Sleep(5000);
+            Thread.Sleep(4000);
             var password = wait.Until(gmail => gmail.FindElement(By.XPath("//input[@class='whsOnd zHQkBf']")));
             password.SendKeys(configInformation.passwordToGmail);
 
@@ -123,14 +130,15 @@ namespace FlippingSkins
             var enterMessage = wait.Until(gmail => gmail.FindElement(By.XPath("//tr[@class='zA zE']")));
             clickButton.MoveToElement(enterMessage).Click().Perform();
 
+            Thread.Sleep(1000);
             var rozwiniecie = wait.Until(gmail => gmail.FindElement(By.XPath("//img[@class='ajT']")));
             clickButton.MoveToElement(rozwiniecie).Click().Perform();
 
+            Thread.Sleep(500);
             var guard = wait.Until(gmail => gmail.FindElement(By.CssSelector("td[style*='font-size:48px'][style*='font-family:Arial']")));
             string keyGuard = guard.Text;
-
             gmail.Quit();
-
+            
             return keyGuard;
         }
     }

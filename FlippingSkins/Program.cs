@@ -33,6 +33,7 @@ internal class Program
                         break;
                 }
 
+                Console.ReadKey();
                 Console.Clear();
             }
             catch (Exception ex)
@@ -53,6 +54,7 @@ internal class Program
         Console.WriteLine("You can only turn on the application once every 10 minutes. If you decide to use it earlier, it may crash.");
         Console.WriteLine("Click enter to continue");
         Console.ReadKey();
+        Console.Clear();
     }
     private static ConfigInformation SettingConfig() => new ConfigInformation("flipingSkins", "vR5QKwJ252H%kpu", "flippingskins@gmail.com", "FlippingSkins123");
 
