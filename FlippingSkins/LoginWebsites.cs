@@ -44,7 +44,7 @@ namespace FlippingSkins
                 Thread.Sleep(2000);
                 LoginToSteam(driver, wait);
 
-                Thread.Sleep(4000);
+                Thread.Sleep(2000);
                 var sorting = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='form-select__body']")));
                 actions.MoveToElement(sorting[3]).Click().Perform();
 

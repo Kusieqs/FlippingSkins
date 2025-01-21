@@ -26,7 +26,8 @@ internal class Program
                 {
                     case '1':
                         IWebDriver driver = LoginWebsites.CreatingWeb(configInformation);
-                        Scrap.ScrapPricesAndNames(driver);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey(driver);
+                        Scrap.ScrapPricesFromSteamMarket(driver);
                         break;
                     case '2':
                         // info

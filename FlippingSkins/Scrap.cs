@@ -5,15 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 
 namespace FlippingSkins
 {
     internal static class Scrap
     {
-        public static void ScrapPricesAndNames(IWebDriver driver)
+        public static List<ScrapElement> scrap = new List<ScrapElement>();
+        public static void ScrapPricesAndNamesFromSkinsMonkey(IWebDriver driver)
         {
-            List<ScrapElement> scrap = new List<ScrapElement>();    
+            bool isToHighPrice = true;
             do
             {
                 Thread.Sleep(2000);
@@ -29,17 +31,46 @@ namespace FlippingSkins
                 {
                     string name = (string)js.ExecuteScript("return arguments[0].textContent;", namesToScrap[i]);
                     string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[i]);
-                    Console.WriteLine($"name:{name} p1 {price}");
-                    Console.ReadKey();
-
-                    Console.WriteLine($"{price}");
-                    Console.ReadKey();
+                    price = price.Remove(0, 1).Trim();
 
                     ScrapElement scrapElement = new ScrapElement(name, float.Parse(price, CultureInfo.InvariantCulture));
-                    scrap.Add(scrapElement);
+
+                    if (!scrap.Any(x => x.Name == name))
+                    {
+                        scrap.Add(scrapElement);
+                    }
+
+                    if (float.Parse(price, CultureInfo.InvariantCulture) < 1.2)
+                    {
+                        isToHighPrice = false;
+                        break;
+                    }
                 }
-                
-            } while (false);
+
+                var scrollbar = namesToScrap[24];
+                Actions actions = new Actions(driver);
+                actions.MoveToElement(scrollbar).Click().Build().Perform();
+
+                for(int i = 0; i < 3; i ++)
+                {
+                    actions.SendKeys(Keys.PageDown).Build().Perform();
+                    Thread.Sleep(250);
+                }
+
+            } while (isToHighPrice);
+        }
+        public static void ScrapPricesFromSteamMarket(IWebDriver driver)
+        {
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
+            driver.Navigate().GoToUrl("https://rust.scmm.app/items");
+            Thread.Sleep(6500);
+            foreach(var item in scrap)
+            {
+                var writeItem = wait.Until(driver => driver.FindElement(By.XPath("//input[@type='text'][@class='mud-input-slot mud-input-root mud-input-root-outlined']")));
+                writeItem.SendKeys("");
+                writeItem.SendKeys($"{item.Name}");
+                Thread.Sleep(2000);
+            }
         }
     }
 }
