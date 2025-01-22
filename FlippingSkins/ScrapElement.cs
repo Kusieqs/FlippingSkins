@@ -9,14 +9,30 @@ namespace FlippingSkins
     internal class ScrapElement
     {
         public string Name { get; set; }
-        public float PriceRustSkinsMonkey { get; set; }
-        public float PriceRustSteam {  get; set; }
-        public float PriceCSGOSkinsMonkey { get; set; }
-        public float PriceCSGOSkinsSteam { get; set; }
-        public ScrapElement(string name, float priceRustSkinsMonkey) 
+
+        public ScrapElement(string name) 
         {
             Name = name;
+        }
+    }
+
+    internal class ScrapRust : ScrapElement
+    {
+        public float PriceRustSkinsMonkey { get; set; }
+        public float PriceRustSteam { get; set; }
+
+        public ScrapRust(string name, float priceRustSkinsMonkey) : base (name)
+        {
             PriceRustSkinsMonkey = priceRustSkinsMonkey;
+        }
+    }
+    internal class ScrapCSGO : ScrapElement
+    {
+        public float PriceCSGOSkinsMonkey { get; set; }
+        public float PriceCSGOSkinsSteam { get; set; }
+        public ScrapCSGO(string name, float priceCSGOSkinsMonkey) : base(name)
+        {
+            PriceCSGOSkinsMonkey = priceCSGOSkinsMonkey;
         }
     }
 }

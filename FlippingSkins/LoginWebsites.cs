@@ -54,7 +54,7 @@ namespace FlippingSkins
                 Thread.Sleep(1500);
 
             }
-            catch (WebDriverTimeoutException ex)
+            catch (WebDriverTimeoutException)
             {
                 Console.WriteLine("Nie udało się załadować strony logowania Steam lub nie znaleziono wymaganych elementów.");
             }
@@ -91,7 +91,7 @@ namespace FlippingSkins
                 var loginIntoSkinsMonkey = wait.Until(driver => driver.FindElement(By.XPath("//input[@class='btn_green_white_innerfade']")));
                 actions.MoveToElement(loginIntoSkinsMonkey).Click().Perform();
             }
-            catch (WebDriverTimeoutException ex)
+            catch (WebDriverTimeoutException)
             {
                 Console.WriteLine("Nie udało się załadować strony logowania Steam lub nie znaleziono wymaganych elementów.");
             }
