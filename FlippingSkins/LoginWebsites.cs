@@ -13,17 +13,12 @@ namespace FlippingSkins
 {
     internal static class LoginWebsites
     {
-        private static ChromeOptions options = new ChromeOptions();
         private static ConfigInformation? configInformation;
         public static IWebDriver CreatingWeb(ConfigInformation config)
         {
             configInformation = config;
-            options.AddArgument("--disable-blink-features=AutomationControlled");
-            options.AddExcludedArgument("enable-automation");
-            options.AddAdditionalOption("useAutomationExtension", false);
-            options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36");
 
-            IWebDriver driver = new ChromeDriver(options);
+            IWebDriver driver = new ChromeDriver(Program.options);
             driver.Manage().Window.Maximize();
             driver.Navigate().GoToUrl("https://www.skinsmonkey.com");
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
@@ -104,7 +99,7 @@ namespace FlippingSkins
 
         private static string GmailGuard()
         {
-            IWebDriver gmail = new ChromeDriver(options);
+            IWebDriver gmail = new ChromeDriver(Program.options);
             gmail.Manage().Window.Maximize();
             gmail.Navigate().GoToUrl("https://workspace.google.com/intl/pl/gmail/");
             WebDriverWait wait = new WebDriverWait(gmail, TimeSpan.FromSeconds(5));

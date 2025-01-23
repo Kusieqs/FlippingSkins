@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,8 @@ namespace FlippingSkins
     internal static class Scrap
     {
         public static List<ScrapRust> scrap = new List<ScrapRust>();
+        public static List<List<ScrapRust>> scrapPriceFromRust;
+        private static int counter = 0;
         public static void ScrapPricesAndNamesFromSkinsMonkey(IWebDriver driver)
         {
             bool isToHighPrice = true;
@@ -59,20 +62,20 @@ namespace FlippingSkins
 
             } while (isToHighPrice);
         }
-        public static void ScrapPricesFromSteamMarket(IWebDriver driver)
+        public static async Task ScrapPricesFromSteamMarket(IWebDriver driver)
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             Actions action = new Actions(driver);
             driver.Navigate().GoToUrl("https://rust.scmm.app/items");
             Thread.Sleep(6500);
             string originalWindow = driver.CurrentWindowHandle;
-            foreach (var item in scrap)
+
+            foreach (var item in scrapPriceFromRust[counter++])
             {
                 var writeItem = wait.Until(driver => driver.FindElement(By.XPath("//input[@type='text'][@class='mud-input-slot mud-input-root mud-input-root-outlined']")));
                 writeItem.SendKeys(Keys.Control + "a");
                 writeItem.SendKeys(Keys.Delete);
                 writeItem.SendKeys($"{item.Name}");
-
                 do
                 {
                     Thread.Sleep(1000);
@@ -103,10 +106,7 @@ namespace FlippingSkins
                 driver.SwitchTo().Window(originalWindow);
             }
 
-            foreach (var item in scrap)
-            {
-                Console.WriteLine($"{item.Name}\n{item.PriceRustSkinsMonkey}\t{item.PriceRustSteam}\n");
-            }
+            driver.Quit();
         }
     }
 }

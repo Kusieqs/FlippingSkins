@@ -1,14 +1,16 @@
 ﻿using FlippingSkins;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 
 internal class Program
 {
-    private static void Main(string[] args)
+    public static ChromeOptions options = new ChromeOptions();
+    private static async Task Main(string[] args)
     {
         ConfigInformation configInformation = SettingConfig();
 
-        StartInfo();
+        StartConfig();
 
         do
         {
@@ -27,7 +29,40 @@ internal class Program
                     case '1':
                         IWebDriver driver = LoginWebsites.CreatingWeb(configInformation);
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey(driver);
-                        Scrap.ScrapPricesFromSteamMarket(driver);
+                        driver.Quit();
+
+                        List<Task> tasks = new List<Task>();
+                        List<List<ScrapRust>> collections = new List<List<ScrapRust>>();
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 5.0);
+
+                        for(int i = 0; i < 5; i++)
+                        {
+                            var collection = Scrap.scrap.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
+                            collections.Add(collection);
+                        }
+
+                        Scrap.scrapPriceFromRust = collections;
+
+
+                        for (int i = 0; i < collections.Count; i++) 
+                        {
+                            tasks.Add(Task.Run(async () =>
+                            {
+                                using (IWebDriver driver = new ChromeDriver(options))
+                                {
+                                    driver.Manage().Window.Maximize();
+                                    await Scrap.ScrapPricesFromSteamMarket(driver);
+                                }
+                            }));
+                        }
+                        await Task.WhenAll(tasks);
+
+
+
+                        foreach (var item in Scrap.scrap)
+                        {
+                            Console.WriteLine($"{item.Name}\n{item.PriceRustSkinsMonkey}\t{item.PriceRustSteam}\n");
+                        }
                         break;
                     case '2':
                         // info
@@ -53,13 +88,21 @@ internal class Program
         }while (true);
     }
     
-    private static void StartInfo()
+    /// <summary>
+    /// Special arguments to set chrome
+    /// </summary>
+    private static void StartConfig()
     {
-        Console.WriteLine("You can only turn on the application once every 10 minutes. If you decide to use it earlier, it may crash.");
-        Console.WriteLine("Click enter to continue");
-        Console.ReadKey();
-        Console.Clear();
+        options.AddArgument("--disable-blink-features=AutomationControlled");
+        options.AddExcludedArgument("enable-automation");
+        options.AddAdditionalOption("useAutomationExtension", false);
+        options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36");
     }
+
+    /// <summary>
+    /// Setting config to login into steam and gmail
+    /// </summary>
+    /// <returns>ConfigInformation object</returns>
     private static ConfigInformation SettingConfig() => new ConfigInformation("flipingSkins", "vR5QKwJ252H%kpu", "flippingskins@gmail.com", "FlippingSkins123");
 
 }
