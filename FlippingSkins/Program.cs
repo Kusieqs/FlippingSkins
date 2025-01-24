@@ -33,9 +33,9 @@ internal class Program
 
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapRust>> collections = new List<List<ScrapRust>>();
-                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 5.0);
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 20.0);
 
-                        for(int i = 0; i < 5; i++)
+                        for(int i = 0; i < 20; i++)
                         {
                             var collection = Scrap.scrap.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collections.Add(collection);
@@ -57,7 +57,7 @@ internal class Program
                         }
                         await Task.WhenAll(tasks);
 
-
+                        Scrap.counter = 0;
 
                         foreach (var item in Scrap.scrap)
                         {

@@ -15,7 +15,7 @@ namespace FlippingSkins
     {
         public static List<ScrapRust> scrap = new List<ScrapRust>();
         public static List<List<ScrapRust>> scrapPriceFromRust;
-        private static int counter = 0;
+        public static int counter = 0;
         public static void ScrapPricesAndNamesFromSkinsMonkey(IWebDriver driver)
         {
             bool isToHighPrice = true;
@@ -76,13 +76,23 @@ namespace FlippingSkins
                 writeItem.SendKeys(Keys.Control + "a");
                 writeItem.SendKeys(Keys.Delete);
                 writeItem.SendKeys($"{item.Name}");
+
+                int counterToSkipPage = 0;
                 do
                 {
                     Thread.Sleep(1000);
+                    counterToSkipPage++;
                     var findElement = wait.Until(driver => driver.FindElements(By.XPath($"//span[text()=\"{item.Name}\"]")));
 
                     if (findElement.Count == 0)
                         continue;
+
+                    if (counterToSkipPage == 4)
+                    {
+                        counterToSkipPage = 0;
+                        var nextPage = wait.Until(driver => driver.FindElement(By.XPath("//button[@aria-label='Next page'][@class='mud-button-root mud-icon-button mud-ripple mud-ripple-icon']")));
+                        action.MoveToElement(findElement[0]).Click().Perform();
+                    }
 
                     action.MoveToElement(findElement[0]).Click().Perform();
                     break;
@@ -101,7 +111,9 @@ namespace FlippingSkins
                 Thread.Sleep(700);
 
                 var priceElements = driver.FindElements(By.XPath("//h6[contains(@class, 'mud-typography mud-typography-h6 pa-2')]//span[contains(text(), '$')]"));
-                item.PriceRustSteam = float.Parse(priceElements[0].Text.Remove(0,1), CultureInfo.InvariantCulture);
+                if(priceElements.Count > 0)
+                    item.PriceRustSteam = float.Parse(priceElements[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
+
                 driver.Close();
                 driver.SwitchTo().Window(originalWindow);
             }
