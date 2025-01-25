@@ -84,15 +84,27 @@ namespace FlippingSkins
                     counterToSkipPage++;
                     var findElement = wait.Until(driver => driver.FindElements(By.XPath($"//span[text()=\"{item.Name}\"]")));
 
-                    if (findElement.Count == 0)
-                        continue;
 
-                    if (counterToSkipPage == 4)
+                    if (counterToSkipPage == 8)
                     {
                         counterToSkipPage = 0;
-                        var nextPage = wait.Until(driver => driver.FindElement(By.XPath("//button[@aria-label='Next page'][@class='mud-button-root mud-icon-button mud-ripple mud-ripple-icon']")));
-                        action.MoveToElement(findElement[0]).Click().Perform();
+                        var nextPage = wait.Until(driver => driver.FindElements(By.XPath("//button[@aria-label='Next page'][@disabled=''][@class='mud-button-root mud-icon-button mud-ripple mud-ripple-icon']")));
+
+                        if (nextPage.Count == 1)
+                            break;
+                        else
+                        {
+                            nextPage = wait.Until(driver => driver.FindElements(By.XPath("//button[@aria-label='Next page'][@class='mud-button-root mud-icon-button mud-ripple mud-ripple-icon']")));
+
+                            if (nextPage.Count == 0)
+                                break;
+
+                            action.MoveToElement(nextPage[0]).Click().Perform();
+                        }
                     }
+
+                    if (findElement.Count == 0)
+                        continue;
 
                     action.MoveToElement(findElement[0]).Click().Perform();
                     break;

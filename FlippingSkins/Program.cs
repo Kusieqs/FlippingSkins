@@ -33,16 +33,16 @@ internal class Program
 
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapRust>> collections = new List<List<ScrapRust>>();
-                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 20.0);
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 5.0);
 
-                        for(int i = 0; i < 20; i++)
+                        for(int i = 0; i < 5; i++)
                         {
                             var collection = Scrap.scrap.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collections.Add(collection);
                         }
 
                         Scrap.scrapPriceFromRust = collections;
-
+                        List<IWebDriver> drivers = new List<IWebDriver>();
 
                         for (int i = 0; i < collections.Count; i++) 
                         {
@@ -51,6 +51,7 @@ internal class Program
                                 using (IWebDriver driver = new ChromeDriver(options))
                                 {
                                     driver.Manage().Window.Maximize();
+                                    drivers.Add(driver);
                                     await Scrap.ScrapPricesFromSteamMarket(driver);
                                 }
                             }));
@@ -93,10 +94,15 @@ internal class Program
     /// </summary>
     private static void StartConfig()
     {
+        options.AddArgument("--headless");
         options.AddArgument("--disable-blink-features=AutomationControlled");
         options.AddExcludedArgument("enable-automation");
+        options.AddArgument("--disable-gpu");
         options.AddAdditionalOption("useAutomationExtension", false);
         options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36");
+        options.AddArgument("--no-sandbox");
+        options.AddArgument("--disable-dev-shm-usage");
+        options.AddArgument("--remote-allow-origins=*");
     }
 
     /// <summary>
