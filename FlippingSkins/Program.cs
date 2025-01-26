@@ -31,29 +31,33 @@ internal class Program
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey(driver);
                         driver.Quit();
 
+                        foreach (var item in Scrap.scrap)
+                        {
+                            Console.WriteLine($"{item.Name}\n");
+                        }
+                        Console.ReadKey();
+
+
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapRust>> collections = new List<List<ScrapRust>>();
-                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 5.0);
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 10.0);
 
-                        for(int i = 0; i < 5; i++)
+                        for(int i = 0; i < 10; i++)
                         {
                             var collection = Scrap.scrap.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collections.Add(collection);
                         }
 
                         Scrap.scrapPriceFromRust = collections;
-                        List<IWebDriver> drivers = new List<IWebDriver>();
 
                         for (int i = 0; i < collections.Count; i++) 
                         {
                             tasks.Add(Task.Run(async () =>
                             {
-                                using (IWebDriver driver = new ChromeDriver(options))
-                                {
-                                    driver.Manage().Window.Maximize();
-                                    drivers.Add(driver);
-                                    await Scrap.ScrapPricesFromSteamMarket(driver);
-                                }
+                                IWebDriver driver = new ChromeDriver(options);
+                                driver.Manage().Window.Maximize();
+                                await Scrap.ScrapPricesFromSteamMarket(driver);
+                                driver.Quit();
                             }));
                         }
                         await Task.WhenAll(tasks);
@@ -94,7 +98,7 @@ internal class Program
     /// </summary>
     private static void StartConfig()
     {
-        options.AddArgument("--headless");
+        //options.AddArgument("--headless");
         options.AddArgument("--disable-blink-features=AutomationControlled");
         options.AddExcludedArgument("enable-automation");
         options.AddArgument("--disable-gpu");

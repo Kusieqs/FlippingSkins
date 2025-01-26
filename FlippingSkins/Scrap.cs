@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Linq;
@@ -67,50 +68,46 @@ namespace FlippingSkins
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             Actions action = new Actions(driver);
             driver.Navigate().GoToUrl("https://rust.scmm.app/items");
-            Thread.Sleep(6500);
+            await Task.Delay(6500);
             string originalWindow = driver.CurrentWindowHandle;
 
             foreach (var item in scrapPriceFromRust[counter++])
             {
-                var writeItem = wait.Until(driver => driver.FindElement(By.XPath("//input[@type='text'][@class='mud-input-slot mud-input-root mud-input-root-outlined']")));
-                writeItem.SendKeys(Keys.Control + "a");
-                writeItem.SendKeys(Keys.Delete);
-                writeItem.SendKeys($"{item.Name}");
+                EnterTextIntoSearch(driver, wait, item.Name);
 
-                int counterToSkipPage = 0;
+                bool isCorrectWindow = false;
                 do
                 {
-                    Thread.Sleep(1000);
-                    counterToSkipPage++;
-                    var findElement = wait.Until(driver => driver.FindElements(By.XPath($"//span[text()=\"{item.Name}\"]")));
-
-
-                    if (counterToSkipPage == 8)
+                    int x = 0;
+                    do
                     {
-                        counterToSkipPage = 0;
-                        var nextPage = wait.Until(driver => driver.FindElements(By.XPath("//button[@aria-label='Next page'][@disabled=''][@class='mud-button-root mud-icon-button mud-ripple mud-ripple-icon']")));
-
-                        if (nextPage.Count == 1)
-                            break;
-                        else
+                        Thread.Sleep(1000);
+                        var findElement = wait.Until(driver => driver.FindElements(By.XPath($"//span[text()=\"{item.Name}\"]")));
+                        if (findElement.Count > 0)
                         {
-                            nextPage = wait.Until(driver => driver.FindElements(By.XPath("//button[@aria-label='Next page'][@class='mud-button-root mud-icon-button mud-ripple mud-ripple-icon']")));
-
-                            if (nextPage.Count == 0)
-                                break;
-
-                            action.MoveToElement(nextPage[0]).Click().Perform();
+                            action.MoveToElement(findElement[0]).Click().Perform();
+                            isCorrectWindow = true;
+                            break;
                         }
+                    } while (++x < 9);
+
+                    if (isCorrectWindow)
+                        break;
+                    else
+                    {
+                        var nextPage = wait.Until(driver => driver.FindElements(By.XPath("//button[@aria-label='Next page'][@class='mud-button-root mud-icon-button mud-ripple mud-ripple-icon']")));
+                        var textGlitch = wait.Until(driver => driver.FindElements(By.XPath($"//p[text()=\"Nothing found, try broadening your search\"]")));
+
+                        if (nextPage.Count == 0 && textGlitch.Count == 1)
+                            action.MoveToElement(nextPage[0]).Click().Perform();
+                        else
+                            EnterTextIntoSearch(driver,wait, item.Name);
                     }
-
-                    if (findElement.Count == 0)
-                        continue;
-
-                    action.MoveToElement(findElement[0]).Click().Perform();
-                    break;
-
                 } while (true);
 
+
+
+                Thread.Sleep(700);
 
                 foreach (string windowHandle in driver.WindowHandles)
                 {
@@ -120,17 +117,24 @@ namespace FlippingSkins
                         break;
                     }
                 }
-                Thread.Sleep(700);
-
+                
                 var priceElements = driver.FindElements(By.XPath("//h6[contains(@class, 'mud-typography mud-typography-h6 pa-2')]//span[contains(text(), '$')]"));
-                if(priceElements.Count > 0)
+
+                if (priceElements.Count > 0)
                     item.PriceRustSteam = float.Parse(priceElements[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
 
                 driver.Close();
+
                 driver.SwitchTo().Window(originalWindow);
             }
+        }
 
-            driver.Quit();
+        private static void EnterTextIntoSearch(IWebDriver driver, WebDriverWait wait, string name)
+        {
+            var writeItem = wait.Until(driver => driver.FindElement(By.XPath("//input[@type='text'][@class='mud-input-slot mud-input-root mud-input-root-outlined']")));
+            writeItem.SendKeys(Keys.Control + "a");
+            writeItem.SendKeys(Keys.Delete);
+            writeItem.SendKeys($"{name}");
         }
     }
 }
