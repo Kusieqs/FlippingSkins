@@ -21,11 +21,24 @@ namespace FlippingSkins
         public float PriceRustSkinsMonkey { get; set; }
         public float PriceRustSteam { get; set; }
 
+        public float PriceRustSkinsWithFee {  get; set; }
+
+        public double Procent {  get; set; }
+
         public ScrapRust(string name, float priceRustSkinsMonkey) : base (name)
         {
             PriceRustSkinsMonkey = priceRustSkinsMonkey;
         }
+
+        public void SetFeeOnSkinsMonkey()
+        {
+            float fee = 0.84f;
+            PriceRustSkinsWithFee = PriceRustSkinsMonkey * fee;
+            Procent = (100 * PriceRustSkinsMonkey) / PriceRustSkinsWithFee;
+        }
+
     }
+
     internal class ScrapCSGO : ScrapElement
     {
         public float PriceCSGOSkinsMonkey { get; set; }
@@ -35,4 +48,5 @@ namespace FlippingSkins
             PriceCSGOSkinsMonkey = priceCSGOSkinsMonkey;
         }
     }
+
 }

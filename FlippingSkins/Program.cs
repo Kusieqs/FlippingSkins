@@ -31,13 +31,6 @@ internal class Program
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey(driver);
                         driver.Quit();
 
-                        foreach (var item in Scrap.scrap)
-                        {
-                            Console.WriteLine($"{item.Name}\n");
-                        }
-                        Console.ReadKey();
-
-
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapRust>> collections = new List<List<ScrapRust>>();
                         int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 10.0);
@@ -64,9 +57,11 @@ internal class Program
 
                         Scrap.counter = 0;
 
+
                         foreach (var item in Scrap.scrap)
                         {
-                            Console.WriteLine($"{item.Name}\n{item.PriceRustSkinsMonkey}\t{item.PriceRustSteam}\n");
+                            item.SetFeeOnSkinsMonkey();
+                            Console.WriteLine($"{item.Name}\n{item.PriceRustSkinsMonkey}\t{item.PriceRustSteam}\t{item.PriceRustSkinsWithFee}\t{item.Procent}");
                         }
                         break;
                     case '2':

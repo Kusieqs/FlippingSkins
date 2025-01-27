@@ -71,6 +71,7 @@ namespace FlippingSkins
             await Task.Delay(6500);
             string originalWindow = driver.CurrentWindowHandle;
 
+
             foreach (var item in scrapPriceFromRust[counter++])
             {
                 EnterTextIntoSearch(driver, wait, item.Name);
@@ -98,9 +99,9 @@ namespace FlippingSkins
                         var nextPage = wait.Until(driver => driver.FindElements(By.XPath("//button[@aria-label='Next page'][@class='mud-button-root mud-icon-button mud-ripple mud-ripple-icon']")));
                         var textGlitch = wait.Until(driver => driver.FindElements(By.XPath($"//p[text()=\"Nothing found, try broadening your search\"]")));
 
-                        if (nextPage.Count == 0 && textGlitch.Count == 1)
+                        if (nextPage.Count > 0)
                             action.MoveToElement(nextPage[0]).Click().Perform();
-                        else
+                        else if (textGlitch.Count > 0)
                             EnterTextIntoSearch(driver,wait, item.Name);
                     }
                 } while (true);
