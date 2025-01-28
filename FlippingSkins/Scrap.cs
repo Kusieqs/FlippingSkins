@@ -118,14 +118,19 @@ namespace FlippingSkins
                         break;
                     }
                 }
-                
-                var priceElements = driver.FindElements(By.XPath("//h6[contains(@class, 'mud-typography mud-typography-h6 pa-2')]//span[contains(text(), '$')]"));
 
-                if (priceElements.Count > 0)
-                    item.PriceRustSteam = float.Parse(priceElements[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
+                int y = 0;
+                do
+                {
+                    var priceElements = driver.FindElements(By.XPath("//h6[contains(@class, 'mud-typography mud-typography-h6 pa-2')]//span[contains(text(), '$')]"));
+
+                    if (priceElements.Count > 0)
+                        item.PriceRustSteam = float.Parse(priceElements[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
+                    Thread.Sleep(2000);
+                } while (++y < 3);
+
 
                 driver.Close();
-
                 driver.SwitchTo().Window(originalWindow);
             }
         }

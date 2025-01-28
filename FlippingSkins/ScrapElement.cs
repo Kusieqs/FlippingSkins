@@ -33,8 +33,8 @@ namespace FlippingSkins
         public void SetFeeOnSkinsMonkey()
         {
             float fee = 0.84f;
-            PriceRustSkinsWithFee = PriceRustSkinsMonkey * fee;
-            Procent = (100 * PriceRustSkinsMonkey) / PriceRustSkinsWithFee;
+            PriceRustSkinsWithFee = (float)Math.Round(PriceRustSkinsMonkey * fee,2);
+            Procent = Math.Round(((100 * PriceRustSkinsMonkey) / PriceRustSkinsWithFee)-100,2);
         }
 
     }

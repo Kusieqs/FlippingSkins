@@ -33,9 +33,9 @@ internal class Program
 
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapRust>> collections = new List<List<ScrapRust>>();
-                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 10.0);
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 20.0);
 
-                        for(int i = 0; i < 10; i++)
+                        for(int i = 0; i < 20; i++)
                         {
                             var collection = Scrap.scrap.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collections.Add(collection);
@@ -45,6 +45,7 @@ internal class Program
 
                         for (int i = 0; i < collections.Count; i++) 
                         {
+                            Thread.Sleep(5000);
                             tasks.Add(Task.Run(async () =>
                             {
                                 IWebDriver driver = new ChromeDriver(options);
@@ -61,8 +62,16 @@ internal class Program
                         foreach (var item in Scrap.scrap)
                         {
                             item.SetFeeOnSkinsMonkey();
-                            Console.WriteLine($"{item.Name}\n{item.PriceRustSkinsMonkey}\t{item.PriceRustSteam}\t{item.PriceRustSkinsWithFee}\t{item.Procent}");
                         }
+
+                        List<ScrapRust> bestDeals = Scrap.scrap.OrderBy(x => x.Procent).Take(50).ToList();
+                        Console.Clear();
+                        Console.WriteLine("Best deals Steam -> SkinsMoneky:");
+                        foreach (var item in Scrap.scrap)
+                        {
+                            Console.WriteLine($"Name: {item.Name}\nProcent: {item.Procent}\nBuy order Steam: {item.PriceRustSteam}\nSell SkinsMoneky {item.PriceRustSkinsWithFee}\n\n");
+                        }
+
                         break;
                     case '2':
                         // info
