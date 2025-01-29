@@ -44,7 +44,7 @@ namespace FlippingSkins
                         scrap.Add(scrapElement);
                     }
 
-                    if (float.Parse(price, CultureInfo.InvariantCulture) < 1.2)
+                    if (float.Parse(price, CultureInfo.InvariantCulture) < 1.8)
                     {
                         isToHighPrice = false;
                         break;
@@ -62,6 +62,7 @@ namespace FlippingSkins
                 }
 
             } while (isToHighPrice);
+            
         }
         public static async Task ScrapPricesFromSteamMarket(IWebDriver driver)
         {
@@ -106,10 +107,6 @@ namespace FlippingSkins
                     }
                 } while (true);
 
-
-
-                Thread.Sleep(700);
-
                 foreach (string windowHandle in driver.WindowHandles)
                 {
                     if (windowHandle != originalWindow)
@@ -119,28 +116,44 @@ namespace FlippingSkins
                     }
                 }
 
-                int y = 0;
-                do
-                {
-                    var priceElements = driver.FindElements(By.XPath("//h6[contains(@class, 'mud-typography mud-typography-h6 pa-2')]//span[contains(text(), '$')]"));
-
-                    if (priceElements.Count > 0)
-                        item.PriceRustSteam = float.Parse(priceElements[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
-                    Thread.Sleep(2000);
-                } while (++y < 3);
-
-
+                SearchingPrice(driver, item);
                 driver.Close();
                 driver.SwitchTo().Window(originalWindow);
             }
         }
 
+        /// <summary>
+        /// Inputing text into textbox
+        /// </summary>
+        /// <param name="driver">IWebDriver object</param>
+        /// <param name="wait">WebDriverWait object</param>
+        /// <param name="name">Name of item</param>
         private static void EnterTextIntoSearch(IWebDriver driver, WebDriverWait wait, string name)
         {
             var writeItem = wait.Until(driver => driver.FindElement(By.XPath("//input[@type='text'][@class='mud-input-slot mud-input-root mud-input-root-outlined']")));
             writeItem.SendKeys(Keys.Control + "a");
             writeItem.SendKeys(Keys.Delete);
             writeItem.SendKeys($"{name}");
+        }
+
+        /// <summary>
+        /// Searching price in website
+        /// </summary>
+        /// <param name="driver">IWebDriver object</param>
+        /// <param name="item">Name of item to scrap price</param>
+        private static void SearchingPrice(IWebDriver driver, ScrapRust item)
+        {
+            do
+            {
+                var priceElements = driver.FindElements(By.XPath("//h6[contains(@class, 'mud-typography mud-typography-h6 pa-2')]//span[contains(text(), '$')]"));
+
+                if (priceElements.Count > 0)
+                {
+                    item.PriceRustSteam = float.Parse(priceElements[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
+                    break;
+                }
+                Thread.Sleep(500);
+            } while (true);
         }
     }
 }

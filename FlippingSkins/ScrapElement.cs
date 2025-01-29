@@ -23,7 +23,7 @@ namespace FlippingSkins
 
         public float PriceRustSkinsWithFee {  get; set; }
 
-        public double Procent {  get; set; }
+        public double Difference {  get; set; }
 
         public ScrapRust(string name, float priceRustSkinsMonkey) : base (name)
         {
@@ -34,7 +34,7 @@ namespace FlippingSkins
         {
             float fee = 0.84f;
             PriceRustSkinsWithFee = (float)Math.Round(PriceRustSkinsMonkey * fee,2);
-            Procent = Math.Round(((100 * PriceRustSkinsMonkey) / PriceRustSkinsWithFee)-100,2);
+            Difference = Math.Round(PriceRustSkinsWithFee - PriceRustSteam,2);
         }
 
     }

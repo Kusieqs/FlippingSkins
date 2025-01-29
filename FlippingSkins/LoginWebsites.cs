@@ -114,12 +114,16 @@ namespace FlippingSkins
             var enterEmail = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
             clickButton.MoveToElement(enterEmail).Click().Perform();
 
-            Thread.Sleep(4000);
+            Console.ReadKey();
+
+            Thread.Sleep(4500);
             var password = wait.Until(gmail => gmail.FindElement(By.XPath("//input[@class='whsOnd zHQkBf']")));
             password.SendKeys(configInformation.passwordToGmail);
 
             var enterPassword = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
             clickButton.MoveToElement(enterPassword).Click().Perform();
+
+            Console.ReadKey();
 
             Thread.Sleep(4500);
             var enterMessage = wait.Until(gmail => gmail.FindElement(By.XPath("//tr[@class='zA zE']")));
