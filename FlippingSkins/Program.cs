@@ -77,14 +77,15 @@ internal class Program
                         item.SetFeeOnSkinsMonkey();
                     }
 
-                    List<ScrapRust> bestDeals = Scrap.scrap.OrderBy(x => x.Difference).Take(50).ToList();
                     Console.Clear();
+                    List<ScrapRust> bestDeals = Scrap.scrap.OrderByDescending(x => x.Difference).Take(50).ToList();
                     Console.WriteLine("Best deals Steam -> SkinsMoneky:");
                     foreach (var item in bestDeals)
                     {
-                        Console.WriteLine($"Name: {item.Name}\nProcent: {item.Difference}\nBuy order Steam: {item.PriceRustSteam}\nSell SkinsMoneky {item.PriceRustSkinsWithFee}\n\n");
+                        Console.WriteLine($"Name: {item.Name}\nDifference: {item.Difference}$\nBuy order Steam: {item.PriceRustSteam}$\nSell SkinsMoneky {item.PriceRustSkinsWithFee}$\n\n");
                     }
-                    Console.WriteLine(stopwatch.Elapsed.Minutes);
+                    Console.WriteLine($"Time to read all prcies: {stopwatch.Elapsed.Minutes}");
+                    Console.WriteLine($"Items count: {Scrap.scrap.Count}");
                     Console.ReadKey();
                     break;
                 case '2':
@@ -109,13 +110,6 @@ internal class Program
     /// </summary>
     private static void StartConfig()
     {
-        var proxy = new Proxy
-        {
-            HttpProxy = "83.12.149.202:8080",  
-            SslProxy = "83.12.149.202:808",
-        };
-
-
         //options.AddArgument("--headless");
         options.AddArgument("--disable-blink-features=AutomationControlled");
         options.AddExcludedArgument("enable-automation");
@@ -125,7 +119,6 @@ internal class Program
         options.AddArgument("--disable-dev-shm-usage");
         options.AddArgument("--remote-allow-origins=*");
         options.AddArgument("--ignore-certificate-errors");
-        //options.Proxy = proxy;
     }
 
     /// <summary>

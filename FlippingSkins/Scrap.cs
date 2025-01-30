@@ -75,22 +75,38 @@ namespace FlippingSkins
 
             foreach (var item in scrapPriceFromRust[counter++])
             {
+
+                int counterOfReadingPrice = 0;
                 EnterTextIntoSearch(driver, wait, item.Name);
+                bool bug = false;
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
 
                 bool isCorrectWindow = false;
                 do
                 {
+                    counterOfReadingPrice++;
                     int x = 0;
                     do
                     {
                         Thread.Sleep(1000);
+                        counterOfReadingPrice++;
                         var findElement = wait.Until(driver => driver.FindElements(By.XPath($"//span[text()=\"{item.Name}\"]")));
+
                         if (findElement.Count > 0)
                         {
                             action.MoveToElement(findElement[0]).Click().Perform();
                             isCorrectWindow = true;
                             break;
                         }
+                        else if (sw.Elapsed.Seconds > 45)
+                        {
+                            isCorrectWindow = true;
+                            bug = true;
+                            sw.Stop();
+                            break;
+                        }
+
                     } while (++x < 9);
 
                     if (isCorrectWindow)
@@ -106,6 +122,9 @@ namespace FlippingSkins
                             EnterTextIntoSearch(driver,wait, item.Name);
                     }
                 } while (true);
+
+                if (bug)
+                    continue;
 
                 foreach (string windowHandle in driver.WindowHandles)
                 {
@@ -143,6 +162,8 @@ namespace FlippingSkins
         /// <param name="item">Name of item to scrap price</param>
         private static void SearchingPrice(IWebDriver driver, ScrapRust item)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             do
             {
                 var priceElements = driver.FindElements(By.XPath("//h6[contains(@class, 'mud-typography mud-typography-h6 pa-2')]//span[contains(text(), '$')]"));
@@ -152,8 +173,13 @@ namespace FlippingSkins
                     item.PriceRustSteam = float.Parse(priceElements[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
                     break;
                 }
+                else if (sw.Elapsed.TotalSeconds > 45)
+                {
+                    break;
+                }
                 Thread.Sleep(500);
             } while (true);
+            sw.Stop();
         }
     }
 }

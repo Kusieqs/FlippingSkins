@@ -63,6 +63,7 @@ namespace FlippingSkins
         {
             try
             {
+                Thread.Sleep(1000);
                 var login = wait.Until(driver => driver.FindElement(By.XPath("//input[@type='text'][@class='_2GBWeup5cttgbTw8FM3tfx']")));
                 login.SendKeys(configInformation.loginToSteam);
 

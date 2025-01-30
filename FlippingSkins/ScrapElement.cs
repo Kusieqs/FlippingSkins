@@ -34,7 +34,7 @@ namespace FlippingSkins
         {
             float fee = 0.84f;
             PriceRustSkinsWithFee = (float)Math.Round(PriceRustSkinsMonkey * fee,2);
-            Difference = Math.Round(PriceRustSkinsWithFee - PriceRustSteam,2);
+            Difference = Math.Round(PriceRustSkinsWithFee - PriceRustSteam, 2);
         }
 
     }
