@@ -14,7 +14,7 @@ namespace FlippingSkins
     internal static class LoginWebsites
     {
         private static ConfigInformation? configInformation;
-        public static IWebDriver CreatingWeb(ConfigInformation config)
+        public static IWebDriver CreatingWeb(ConfigInformation config, int mode)
         {
             configInformation = config;
 
@@ -23,40 +23,39 @@ namespace FlippingSkins
             driver.Navigate().GoToUrl("https://www.skinsmonkey.com");
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
 
-            LoginToSkinsMonkey(driver, wait);
+            LoginToSkinsMonkey(driver, wait, mode);
 
             return driver;
         }
 
-        private static void LoginToSkinsMonkey(IWebDriver driver,WebDriverWait wait)
+        private static void LoginToSkinsMonkey(IWebDriver driver,WebDriverWait wait, int mode)
         {
-            try
+            var loginButton = wait.Until(driver => driver.FindElement(By.XPath("//div[@class='base-button auth-button primary']")));
+            Actions actions = new Actions(driver);
+            actions.MoveToElement(loginButton).Click().Perform();
+
+            Thread.Sleep(2000);
+            LoginToSteam(driver, wait);
+
+            Thread.Sleep(2000);
+            var sorting = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='form-select__body']")));
+            actions.MoveToElement(sorting[3]).Click().Perform();
+
+            Thread.Sleep(500);
+
+            IWebElement element;
+
+            if(mode == 1)
             {
-                var loginButton = wait.Until(driver => driver.FindElement(By.XPath("//div[@class='base-button auth-button primary']")));
-                Actions actions = new Actions(driver);
-                actions.MoveToElement(loginButton).Click().Perform();
-
-                Thread.Sleep(2000);
-                LoginToSteam(driver, wait);
-
-                Thread.Sleep(2000);
-                var sorting = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='form-select__body']")));
-                actions.MoveToElement(sorting[3]).Click().Perform();
-
-                Thread.Sleep(500);
-                var clickRust = wait.Until(driver => driver.FindElement(By.XPath("//img[@alt='Rust']")));
-                actions.MoveToElement(clickRust).Click().Perform();
-                Thread.Sleep(1500);
-
+                element = wait.Until(driver => driver.FindElement(By.XPath("//img[@alt='Rust']")));
             }
-            catch (WebDriverTimeoutException)
+            else
             {
-                Console.WriteLine("Nie udało się załadować strony logowania Steam lub nie znaleziono wymaganych elementów.");
+                element = wait.Until(driver => driver.FindElement(By.XPath("//img[@alt='CS2']")));
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error " + ex);
-            }
+
+            actions.MoveToElement(element).Click().Perform();
+            Thread.Sleep(1500);
         }
 
         private static void LoginToSteam(IWebDriver driver, WebDriverWait wait)
@@ -115,8 +114,6 @@ namespace FlippingSkins
             var enterEmail = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
             clickButton.MoveToElement(enterEmail).Click().Perform();
 
-            Console.ReadKey();
-
             Thread.Sleep(4500);
             var password = wait.Until(gmail => gmail.FindElement(By.XPath("//input[@class='whsOnd zHQkBf']")));
             password.SendKeys(configInformation.passwordToGmail);
@@ -124,7 +121,6 @@ namespace FlippingSkins
             var enterPassword = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
             clickButton.MoveToElement(enterPassword).Click().Perform();
 
-            Console.ReadKey();
 
             Thread.Sleep(4500);
             var enterMessage = wait.Until(gmail => gmail.FindElement(By.XPath("//tr[@class='zA zE']")));

@@ -26,24 +26,22 @@ internal class Program
             switch (key.KeyChar)
             {
                 case '1':
-                    Stopwatch stopwatch = new Stopwatch();
                     try
                     {
-                        IWebDriver driver = LoginWebsites.CreatingWeb(configInformation);
+                        IWebDriver driver = LoginWebsites.CreatingWeb(configInformation,1);
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey(driver);
                         driver.Quit();
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapRust>> collections = new List<List<ScrapRust>>();
-                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrap.Count / 5.0);
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / 5.0);
 
                         for (int i = 0; i < 5; i++)
                         {
-                            var collection = Scrap.scrap.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
+                            var collection = Scrap.scrapRust.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collections.Add(collection);
                         }
 
                         Scrap.scrapPriceFromRust = collections;
-                        stopwatch.Start();
                         for (int i = 0; i < collections.Count; i++)
                         {
                             Thread.Sleep(5000);
@@ -56,43 +54,53 @@ internal class Program
                             }));
                         }
                         await Task.WhenAll(tasks);
-                        stopwatch.Stop();
                         Scrap.counter = 0;
                     }
                     catch(Exception ex)
                     {
-                        Console.Clear();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("ERROR!!!");
-                        Console.ResetColor();
-                        Console.WriteLine(ex.ToString());
-                        Console.WriteLine("Click enter to continue");
-                        stopwatch.Stop();
-                        Console.ReadKey();
+                        ExceptionMessage(ex);
                     }
 
 
-                    foreach (var item in Scrap.scrap)
+                    foreach (var item in Scrap.scrapRust)
                     {
                         item.SetFeeOnSkinsMonkey();
                     }
 
                     Console.Clear();
-                    List<ScrapRust> bestDeals = Scrap.scrap.OrderByDescending(x => x.Difference).Take(50).ToList();
+                    List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.Difference).Take(100).ToList();
                     Console.WriteLine("Best deals Steam -> SkinsMoneky:");
                     foreach (var item in bestDeals)
                     {
                         Console.WriteLine($"Name: {item.Name}\nDifference: {item.Difference}$\nBuy order Steam: {item.PriceRustSteam}$\nSell SkinsMoneky {item.PriceRustSkinsWithFee}$\n\n");
                     }
-                    Console.WriteLine($"Time to read all prcies: {stopwatch.Elapsed.Minutes}");
-                    Console.WriteLine($"Items count: {Scrap.scrap.Count}");
                     Console.ReadKey();
                     break;
+
+
                 case '2':
-                    //cs
+                    try
+                    {
+                        IWebDriver driver = LoginWebsites.CreatingWeb(configInformation,0);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey(driver);
+                        driver.Quit();
+                        List<Task> tasks = new List<Task>();
+                        List<List<ScrapCSGO>> collections = new List<List<ScrapCSGO>>();
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / 5.0);
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            var collection = Scrap.scrapCSGO.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
+                            collections.Add(collection);
+                        }
+                        Scrap.scrapPriceFromCSGO = collections;
+                    }
+                    catch(Exception ex)
+                    {
+                        ExceptionMessage(ex);
+                    }
                     break;
                 case '3':
-                    // info
                     break;
                 case '4':
                     Environment.Exit(0);
@@ -126,5 +134,16 @@ internal class Program
     /// </summary>
     /// <returns>ConfigInformation object</returns>
     private static ConfigInformation SettingConfig() => new ConfigInformation("flipingSkins", "vR5QKwJ252H%kpu", "flippingskins@gmail.com", "FlippingSkins123");
+
+    private static void ExceptionMessage(Exception ex)
+    {
+        Console.Clear();
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("ERROR!!!");
+        Console.ResetColor();
+        Console.WriteLine(ex.ToString());
+        Console.WriteLine("Click enter to continue");
+        Console.ReadKey();
+    }
 
 }

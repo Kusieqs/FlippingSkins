@@ -14,8 +14,10 @@ namespace FlippingSkins
 {
     internal static class Scrap
     {
-        public static List<ScrapRust> scrap = new List<ScrapRust>();
+        public static List<ScrapRust> scrapRust = new List<ScrapRust>();
         public static List<List<ScrapRust>> scrapPriceFromRust;
+        public static List<ScrapCSGO> scrapCSGO = new List<ScrapCSGO>();
+        public static List<List<ScrapCSGO>> scrapPriceFromCSGO;
         public static int counter = 0;
         public static void ScrapPricesAndNamesFromSkinsMonkey(IWebDriver driver)
         {
@@ -39,9 +41,9 @@ namespace FlippingSkins
 
                     ScrapRust scrapElement = new ScrapRust(name, float.Parse(price, CultureInfo.InvariantCulture));
 
-                    if (!scrap.Any(x => x.Name == name))
+                    if (!scrapRust.Any(x => x.Name == name))
                     {
-                        scrap.Add(scrapElement);
+                        scrapRust.Add(scrapElement);
                     }
 
                     if (float.Parse(price, CultureInfo.InvariantCulture) < 1.8)
