@@ -43,18 +43,17 @@ namespace FlippingSkins
 
             Thread.Sleep(500);
 
-            IWebElement element;
 
             if(mode == 1)
             {
-                element = wait.Until(driver => driver.FindElement(By.XPath("//img[@alt='Rust']")));
+                var element = wait.Until(driver => driver.FindElement(By.XPath("//img[@alt='Rust']")));
+                actions.MoveToElement(element).Click().Perform();
             }
             else
             {
-                element = wait.Until(driver => driver.FindElement(By.XPath("//img[@alt='CS2']")));
+                var elements = wait.Until(driver => driver.FindElements(By.XPath("//img[@alt='CS2']")));
+                actions.MoveToElement(elements[1]).Click().Perform();
             }
-
-            actions.MoveToElement(element).Click().Perform();
             Thread.Sleep(1500);
         }
 

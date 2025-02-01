@@ -19,8 +19,9 @@ namespace FlippingSkins
         public static List<ScrapCSGO> scrapCSGO = new List<ScrapCSGO>();
         public static List<List<ScrapCSGO>> scrapPriceFromCSGO;
         public static int counter = 0;
-        public static void ScrapPricesAndNamesFromSkinsMonkey(IWebDriver driver)
+        public static void ScrapPricesAndNamesFromSkinsMonkey_Rust(IWebDriver driver)
         {
+            Actions actions = new Actions(driver);
             bool isToHighPrice = true;
             do
             {
@@ -28,7 +29,7 @@ namespace FlippingSkins
                 WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
                 var namesToScrap = wait.Until(driver => driver.FindElements(By.XPath("//span[@class='item-card__name']")));
                 var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
-                var pricesV2ToSCrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-card__info']")));
+                var pricesV2ToScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-card__info']")));
 
                 Console.Clear();
                 IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
@@ -37,7 +38,8 @@ namespace FlippingSkins
                 {
                     string name = (string)js.ExecuteScript("return arguments[0].textContent;", namesToScrap[i]);
                     string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[i]);
-                    price = price.Remove(0, 1).Trim();
+                    string littlePrice = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV2ToScrap[i]);
+                    price = price.Remove(0, 1).Trim() + littlePrice;
 
                     ScrapRust scrapElement = new ScrapRust(name, float.Parse(price, CultureInfo.InvariantCulture));
 
@@ -46,15 +48,15 @@ namespace FlippingSkins
                         scrapRust.Add(scrapElement);
                     }
 
-                    if (float.Parse(price, CultureInfo.InvariantCulture) < 1.8)
+                    if (scrapElement.PriceRustSkinsMonkey < 1.8)
                     {
                         isToHighPrice = false;
                         break;
                     }
                 }
 
+
                 var scrollbar = namesToScrap[24];
-                Actions actions = new Actions(driver);
                 actions.MoveToElement(scrollbar).Click().Build().Perform();
 
                 for(int i = 0; i < 3; i ++)
@@ -65,6 +67,64 @@ namespace FlippingSkins
 
             } while (isToHighPrice);
             
+        }
+        public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver)
+        {
+            bool isToHighPrice = true;
+            int higher = 999;
+
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
+            var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
+            Actions action = new Actions(driver);
+            action.Click(sorting[2]).Build().Perform();
+            Thread.Sleep(500);
+            sorting[2].SendKeys("999");
+            Thread.Sleep(1000);
+
+            do
+            {
+
+                Thread.Sleep(2000);
+                var namesToScrap = wait.Until(driver => driver.FindElements(By.XPath("//span[@class='item-card__name']")));
+                var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
+                var pricesV2ToScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-card__info']")));
+
+                Console.Clear();
+                IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+
+                for (int i = 0; i < namesToScrap.Count; i++)
+                {
+                    string name = (string)js.ExecuteScript("return arguments[0].textContent;", namesToScrap[i]);
+                    string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[i]);
+                    string littlePrice = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV2ToScrap[i]);
+                    price = price.Remove(0, 1).Trim() + littlePrice;
+
+                    ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
+
+                    if (!scrapRust.Any(x => x.Name == name))
+                    {
+                        scrapCSGO.Add(scrapElement);
+                    }
+
+                    if (scrapElement.PriceCSGOSkinsMonkey < 1)
+                    {
+                        isToHighPrice = false;
+                        break;
+                    }
+
+                    var scrollbar = namesToScrap[24];
+                    action.MoveToElement(scrollbar).Click().Build().Perform();
+
+                }
+
+                for (int i = 0; i < 3; i++)
+                {
+                    action.SendKeys(Keys.PageDown).Build().Perform();
+                    Thread.Sleep(250);
+                }
+
+            } while(isToHighPrice);
+
         }
         public static async Task ScrapPricesFromSteamMarket(IWebDriver driver)
         {

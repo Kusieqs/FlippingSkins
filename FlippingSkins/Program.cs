@@ -29,7 +29,7 @@ internal class Program
                     try
                     {
                         IWebDriver driver = LoginWebsites.CreatingWeb(configInformation,1);
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey(driver);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_Rust(driver);
                         driver.Quit();
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapRust>> collections = new List<List<ScrapRust>>();
@@ -82,7 +82,7 @@ internal class Program
                     try
                     {
                         IWebDriver driver = LoginWebsites.CreatingWeb(configInformation,0);
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey(driver);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(driver);
                         driver.Quit();
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapCSGO>> collections = new List<List<ScrapCSGO>>();
@@ -99,6 +99,13 @@ internal class Program
                     {
                         ExceptionMessage(ex);
                     }
+
+                    foreach(var item in Scrap.scrapCSGO)
+                    {
+                        Console.WriteLine(item.Name);
+                    }
+                    Console.WriteLine(Scrap.scrapCSGO.Count);
+
                     break;
                 case '3':
                     break;
