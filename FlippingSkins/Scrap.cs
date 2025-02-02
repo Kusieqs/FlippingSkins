@@ -77,17 +77,13 @@ namespace FlippingSkins
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
             Actions action = new Actions(driver);
             action.Click(sorting[2]).Build().Perform();
-            Thread.Sleep(500);
-            sorting[2].SendKeys("999");
-            Thread.Sleep(1000);
+            sorting[2].SendKeys("50");
 
             do
             {
-
                 Thread.Sleep(2000);
-                var namesToScrap = wait.Until(driver => driver.FindElements(By.XPath("//span[@class='item-card__name']")));
+                var namesToScrap = wait.Until(driver => driver.FindElements(By.XPath("//span[@class='item-730-rarity item-card-730-label__skin']")));
                 var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
-                var pricesV2ToScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-card__info']")));
 
                 Console.Clear();
                 IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
@@ -96,8 +92,7 @@ namespace FlippingSkins
                 {
                     string name = (string)js.ExecuteScript("return arguments[0].textContent;", namesToScrap[i]);
                     string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[i]);
-                    string littlePrice = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV2ToScrap[i]);
-                    price = price.Remove(0, 1).Trim() + littlePrice;
+                    price = price.Remove(0, 1).Trim();
 
                     ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
 
@@ -112,12 +107,13 @@ namespace FlippingSkins
                         break;
                     }
 
-                    var scrollbar = namesToScrap[24];
-                    action.MoveToElement(scrollbar).Click().Build().Perform();
-
                 }
 
-                for (int i = 0; i < 3; i++)
+
+                var scrollbar = namesToScrap[29];
+                action.MoveToElement(scrollbar).Click().Build().Perform();
+
+                for (int i = 0; i < 4; i++)
                 {
                     action.SendKeys(Keys.PageDown).Build().Perform();
                     Thread.Sleep(250);

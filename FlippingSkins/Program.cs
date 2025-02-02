@@ -19,7 +19,7 @@ internal class Program
             Console.WriteLine("################ MENU ################");
             Console.WriteLine("######################################");
 
-            Console.Write("\n\n1. Start scraping prices rust STEAM->SKINSMONKEY\n2. Start scraping prices rust SKINSMONKEY->STEAM\n3. Information\n4. Exit\n\nNumber: ");
+            Console.Write("\n\n1. Start scraping prices rust STEAM->SKINSMONKEY\n2. Start scraping prices csgo SKINSMONKEY->STEAM\n3. Information\n4. Exit\n\nNumber: ");
             ConsoleKeyInfo key = Console.ReadKey();
             Console.WriteLine("\n\n");
 
@@ -44,7 +44,7 @@ internal class Program
                         Scrap.scrapPriceFromRust = collections;
                         for (int i = 0; i < collections.Count; i++)
                         {
-                            Thread.Sleep(5000);
+                            Thread.Sleep(2500);
                             tasks.Add(Task.Run(async () =>
                             {
                                 IWebDriver driver = new ChromeDriver(options);
