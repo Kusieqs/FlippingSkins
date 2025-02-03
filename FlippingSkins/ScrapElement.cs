@@ -9,14 +9,44 @@ namespace FlippingSkins
     internal class ScrapElement
     {
         public string Name { get; set; }
-        public float PriceRustSkinsMonkey { get; set; }
-        public float PriceRustSteam {  get; set; }
-        public float PriceCSGOSkinsMonkey { get; set; }
-        public float PriceCSGOSkinsSteam { get; set; }
-        public ScrapElement(string name, float priceRustSkinsMonkey) 
+
+        public ScrapElement(string name) 
         {
             Name = name;
-            PriceRustSkinsMonkey = priceRustSkinsMonkey;
         }
     }
+
+    internal class ScrapRust : ScrapElement
+    {
+        public float PriceRustSkinsMonkey { get; set; }
+        public float PriceRustSteam { get; set; }
+
+        public float PriceRustSkinsWithFee {  get; set; }
+
+        public double Difference {  get; set; }
+
+        public ScrapRust(string name, float priceRustSkinsMonkey) : base (name)
+        {
+            PriceRustSkinsMonkey = priceRustSkinsMonkey;
+        }
+
+        public void SetFeeOnSkinsMonkey()
+        {
+            float fee = 0.84f;
+            PriceRustSkinsWithFee = (float)Math.Round(PriceRustSkinsMonkey * fee,2);
+            Difference = Math.Round(PriceRustSkinsWithFee - PriceRustSteam, 2);
+        }
+
+    }
+
+    internal class ScrapCSGO : ScrapElement
+    {
+        public float PriceCSGOSkinsMonkey { get; set; }
+        public float PriceCSGOSkinsSteam { get; set; }
+        public ScrapCSGO(string name, float priceCSGOSkinsMonkey) : base(name)
+        {
+            PriceCSGOSkinsMonkey = priceCSGOSkinsMonkey;
+        }
+    }
+
 }

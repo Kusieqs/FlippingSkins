@@ -1,61 +1,156 @@
-﻿using FlippingSkins;
+﻿using System.Diagnostics;
+using FlippingSkins;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 
 internal class Program
 {
-    private static void Main(string[] args)
+    public static ChromeOptions options = new ChromeOptions();
+    private static async Task Main(string[] args)
     {
         ConfigInformation configInformation = SettingConfig();
 
-        StartInfo();
+        StartConfig();
 
         do
         {
-            try
+            Console.WriteLine("######################################");
+            Console.WriteLine("################ MENU ################");
+            Console.WriteLine("######################################");
+
+            Console.Write("\n\n1. Start scraping prices rust STEAM->SKINSMONKEY\n2. Start scraping prices csgo SKINSMONKEY->STEAM\n3. Information\n4. Exit\n\nNumber: ");
+            ConsoleKeyInfo key = Console.ReadKey();
+            Console.WriteLine("\n\n");
+
+            switch (key.KeyChar)
             {
-                Console.WriteLine("######################################");
-                Console.WriteLine("################ MENU ################");
-                Console.WriteLine("######################################");
+                case '1':
+                    try
+                    {
+                        IWebDriver driver = LoginWebsites.CreatingWeb(configInformation,1);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_Rust(driver);
+                        driver.Quit();
+                        List<Task> tasks = new List<Task>();
+                        List<List<ScrapRust>> collections = new List<List<ScrapRust>>();
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / 5.0);
 
-                Console.Write("\n\n1. Start scraping prices\n2. Informations\n3. Exit\n\nNumber: ");
-                ConsoleKeyInfo key = Console.ReadKey();
-                Console.WriteLine("\n\n");
+                        for (int i = 0; i < 5; i++)
+                        {
+                            var collection = Scrap.scrapRust.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
+                            collections.Add(collection);
+                        }
 
-                switch(key.KeyChar)
-                {
-                    case '1':
-                        LoginWebsites.CreatingWeb(configInformation);
-                        break;
-                    case '2':
-                        // info
-                        break;
-                    case '3':
-                        Environment.Exit(0);
-                        break;
-                }
+                        Scrap.scrapPriceFromRust = collections;
+                        for (int i = 0; i < collections.Count; i++)
+                        {
+                            Thread.Sleep(2500);
+                            tasks.Add(Task.Run(async () =>
+                            {
+                                IWebDriver driver = new ChromeDriver(options);
+                                driver.Manage().Window.Maximize();
+                                await Scrap.ScrapPricesFromSteamMarket(driver);
+                                driver.Quit();
+                            }));
+                        }
+                        await Task.WhenAll(tasks);
+                        Scrap.counter = 0;
+                    }
+                    catch(Exception ex)
+                    {
+                        ExceptionMessage(ex);
+                    }
 
-                Console.ReadKey();
-                Console.Clear();
+
+                    foreach (var item in Scrap.scrapRust)
+                    {
+                        item.SetFeeOnSkinsMonkey();
+                    }
+
+                    Console.Clear();
+                    List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.Difference).Take(100).ToList();
+                    Console.WriteLine("Best deals Steam -> SkinsMoneky:");
+                    foreach (var item in bestDeals)
+                    {
+                        Console.WriteLine($"Name: {item.Name}\nDifference: {item.Difference}$\nBuy order Steam: {item.PriceRustSteam}$\nSell SkinsMoneky {item.PriceRustSkinsWithFee}$\n\n");
+                    }
+                    Console.ReadKey();
+                    break;
+
+
+                case '2':
+                    try
+                    {
+                        IWebDriver driver = LoginWebsites.CreatingWeb(configInformation,0);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(driver);
+                        driver.Quit();
+                        List<Task> tasks = new List<Task>();
+                        List<List<ScrapCSGO>> collections = new List<List<ScrapCSGO>>();
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / 5.0);
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            var collection = Scrap.scrapCSGO.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
+                            collections.Add(collection);
+                        }
+                        Scrap.scrapPriceFromCSGO = collections;
+                    }
+                    catch(Exception ex)
+                    {
+                        ExceptionMessage(ex);
+                    }
+
+                    foreach(var item in Scrap.scrapCSGO)
+                    {
+                        Console.WriteLine(item.Name);
+                    }
+                    Console.WriteLine(Scrap.scrapCSGO.Count);
+
+                    break;
+                case '3':
+                    break;
+                case '4':
+                    Environment.Exit(0);
+                    break;
             }
-            catch (Exception ex)
-            {
-                Console.Clear();
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ERROR!!!");
-                Console.ResetColor();
-                Console.WriteLine(ex.ToString());
-                Console.WriteLine("Click enter to continue");
-                Console.ReadKey();
-            }
-        }while (true);
+
+            Console.ReadKey();
+            Console.Clear();
+
+        } while (true);
     }
-    
-    private static void StartInfo()
+
+    /// <summary>
+    /// Special arguments to set chrome
+    /// </summary>
+    private static void StartConfig()
     {
-        Console.WriteLine("You can only turn on the application once every 10 minutes. If you decide to use it earlier, it may crash.");
+        //options.AddArgument("--headless");
+        options.AddArgument("--disable-blink-features=AutomationControlled");
+        options.AddExcludedArgument("enable-automation");
+        options.AddAdditionalOption("useAutomationExtension", false);
+        options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36");
+        options.AddArgument("--no-sandbox");
+        options.AddArgument("--disable-dev-shm-usage");
+        options.AddArgument("--remote-allow-origins=*");
+        options.AddArgument("--ignore-certificate-errors");
+    }
+
+    /// <summary>
+    /// Setting config to login into steam and gmail
+    /// </summary>
+    /// <returns>ConfigInformation object</returns>
+    private static ConfigInformation SettingConfig() => new ConfigInformation("flipingSkins", "vR5QKwJ252H%kpu", "flippingskins@gmail.com", "FlippingSkins123");
+
+    private static void ExceptionMessage(Exception ex)
+    {
+        Console.Clear();
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("ERROR!!!");
+        Console.ResetColor();
+        Console.WriteLine(ex.ToString());
         Console.WriteLine("Click enter to continue");
         Console.ReadKey();
-        Console.Clear();
     }
-    private static ConfigInformation SettingConfig() => new ConfigInformation("flipingSkins", "vR5QKwJ252H%kpu", "flippingskins@gmail.com", "FlippingSkins123");
 
 }
