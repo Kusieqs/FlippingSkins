@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace FlippingSkins
 {
+
     internal class ScrapElement
     {
         public string Name { get; set; }
@@ -43,9 +44,14 @@ namespace FlippingSkins
     {
         public float PriceCSGOSkinsMonkey { get; set; }
         public float PriceCSGOSkinsSteam { get; set; }
-        public ScrapCSGO(string name, float priceCSGOSkinsMonkey) : base(name)
+        public bool StatTrak { get; set; }
+        public string Quality {  get; set; }
+
+        public ScrapCSGO(string name, float priceCSGOSkinsMonkey, bool statTrak, string quality) : base(name)
         {
             PriceCSGOSkinsMonkey = priceCSGOSkinsMonkey;
+            StatTrak = statTrak;
+            Quality = quality;
         }
     }
 

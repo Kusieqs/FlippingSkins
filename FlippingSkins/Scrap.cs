@@ -14,6 +14,16 @@ namespace FlippingSkins
 {
     internal static class Scrap
     {
+
+        public static readonly List<string> quality = new List<string>()
+        {
+            "Factory New",
+            "Minimal Wear",
+            "Field-Tested",
+            "Well-Worn",
+            "Battle-Scarred"
+        };
+
         public static List<ScrapRust> scrapRust = new List<ScrapRust>();
         public static List<List<ScrapRust>> scrapPriceFromRust;
         public static List<ScrapCSGO> scrapCSGO = new List<ScrapCSGO>();
@@ -71,7 +81,6 @@ namespace FlippingSkins
         public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver)
         {
             bool isToHighPrice = true;
-            int higher = 999;
 
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
@@ -82,21 +91,41 @@ namespace FlippingSkins
             do
             {
                 Thread.Sleep(2000);
-                var namesToScrap = wait.Until(driver => driver.FindElements(By.XPath("//span[@class='item-730-rarity item-card-730-label__skin']")));
                 var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
+                var element = wait.Until(driver => driver.FindElements(By.CssSelector("img.item-image")));
 
                 Console.Clear();
                 IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 
-                for (int i = 0; i < namesToScrap.Count; i++)
+                for (int i = 0; i < pricesV1toScrap.Count; i++)
                 {
-                    string name = (string)js.ExecuteScript("return arguments[0].textContent;", namesToScrap[i]);
                     string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[i]);
                     price = price.Remove(0, 1).Trim();
+                    var imgElement = element[i];
+                    string altText = imgElement.GetAttribute("alt"); 
 
-                    ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
+                    bool statTrak = false;
+                    string qualityName = "";
 
-                    if (!scrapRust.Any(x => x.Name == name))
+                    if (altText.StartsWith("StatTrak"))
+                    {
+                        statTrak = true;
+                    }
+
+                    foreach(string qual in quality)
+                    {
+                        if(altText.EndsWith("(" + qual + ")"))
+                        {
+                            qualityName = qual;
+                        }
+                    }
+
+                    string name = altText.Trim();
+
+                    ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture), statTrak, qualityName);
+                    Console.WriteLine(name);
+
+                    if (!scrapCSGO.Any(x => x.Name == name))
                     {
                         scrapCSGO.Add(scrapElement);
                     }
@@ -110,7 +139,7 @@ namespace FlippingSkins
                 }
 
 
-                var scrollbar = namesToScrap[29];
+                var scrollbar = pricesV1toScrap[29];
                 action.MoveToElement(scrollbar).Click().Build().Perform();
 
                 for (int i = 0; i < 4; i++)

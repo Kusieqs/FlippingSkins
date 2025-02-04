@@ -83,6 +83,11 @@ internal class Program
                     {
                         IWebDriver driver = LoginWebsites.CreatingWeb(configInformation,0);
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(driver);
+                        foreach (var item in Scrap.scrapCSGO)
+                        {
+                            Console.WriteLine(item.Name);
+                        }
+                        Console.WriteLine(Scrap.scrapCSGO.Count);
                         driver.Quit();
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapCSGO>> collections = new List<List<ScrapCSGO>>();
@@ -100,11 +105,6 @@ internal class Program
                         ExceptionMessage(ex);
                     }
 
-                    foreach(var item in Scrap.scrapCSGO)
-                    {
-                        Console.WriteLine(item.Name);
-                    }
-                    Console.WriteLine(Scrap.scrapCSGO.Count);
 
                     break;
                 case '3':
