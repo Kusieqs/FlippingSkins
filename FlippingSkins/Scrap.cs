@@ -86,7 +86,7 @@ namespace FlippingSkins
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
             Actions action = new Actions(driver);
             action.Click(sorting[2]).Build().Perform();
-            sorting[2].SendKeys("2");
+            sorting[2].SendKeys("1.2");
 
             do
             {
@@ -235,17 +235,23 @@ namespace FlippingSkins
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             Actions action = new Actions(driver);
-            driver.Navigate().GoToUrl("https://csgo.steamanalyst.com/");
+            driver.Navigate().GoToUrl("https://pricempire.com/");
             await Task.Delay(6500);
+
             string originalWindow = driver.CurrentWindowHandle;
 
             foreach (var item in scrapPriceFromCSGO[counter++])
             {
-                EnterTextIntoSearch(driver, wait, item.Name, "//input[@class='form-control']");
-                Thread.Sleep(2000);
-                var combobox = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='autocomplete-suggestion']")));
+                Thread.Sleep(1000);
+                var searchClick = wait.Until(driver => driver.FindElement(By.XPath("//span[@class='hidden md:inline']")));
+                action.MoveToElement(searchClick).Click().Perform();
+                Thread.Sleep(300);
+                EnterTextIntoSearch(driver, wait, item.Name, "//input[@class='w-full text-lg peer w-full bg-transparent text-slate-100 outline-none placeholder:text-slate-400']");
+                
+
+                var combobox = wait.Until(driver => driver.FindElements(By.XPath("//p[@class='truncate font-medium']")));
                 action.MoveToElement((IWebElement)combobox.Where(x => x.Text == item.Name)).Click().Perform();
-                Thread.Sleep(3000);
+                Thread.Sleep(2000);
             }
 
         }
