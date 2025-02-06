@@ -86,7 +86,7 @@ namespace FlippingSkins
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
             Actions action = new Actions(driver);
             action.Click(sorting[2]).Build().Perform();
-            sorting[2].SendKeys("50");
+            sorting[2].SendKeys("2");
 
             do
             {
@@ -119,11 +119,9 @@ namespace FlippingSkins
                             qualityName = qual;
                         }
                     }
-
                     string name = altText.Trim();
 
                     ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture), statTrak, qualityName);
-                    Console.WriteLine(name);
 
                     if (!scrapCSGO.Any(x => x.Name == name))
                     {
@@ -151,7 +149,7 @@ namespace FlippingSkins
             } while(isToHighPrice);
 
         }
-        public static async Task ScrapPricesFromSteamMarket(IWebDriver driver)
+        public static async Task ScrapPricesFromSteamMarketRust(IWebDriver driver)
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             Actions action = new Actions(driver);
@@ -159,12 +157,11 @@ namespace FlippingSkins
             await Task.Delay(6500);
             string originalWindow = driver.CurrentWindowHandle;
 
-
             foreach (var item in scrapPriceFromRust[counter++])
             {
 
                 int counterOfReadingPrice = 0;
-                EnterTextIntoSearch(driver, wait, item.Name);
+                EnterTextIntoSearch(driver, wait, item.Name, "//input[@type='text'][@class='mud-input-slot mud-input-root mud-input-root-outlined']");
                 bool bug = false;
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
@@ -206,7 +203,7 @@ namespace FlippingSkins
                         if (nextPage.Count > 0)
                             action.MoveToElement(nextPage[0]).Click().Perform();
                         else if (textGlitch.Count > 0)
-                            EnterTextIntoSearch(driver,wait, item.Name);
+                            EnterTextIntoSearch(driver,wait, item.Name, "//input[@type='text'][@class='mud-input-slot mud-input-root mud-input-root-outlined']");
                     }
                 } while (true);
 
@@ -234,9 +231,27 @@ namespace FlippingSkins
         /// <param name="driver">IWebDriver object</param>
         /// <param name="wait">WebDriverWait object</param>
         /// <param name="name">Name of item</param>
-        private static void EnterTextIntoSearch(IWebDriver driver, WebDriverWait wait, string name)
+        public static async Task ScrapPricesFromSteamMarketCSGO(IWebDriver driver)
         {
-            var writeItem = wait.Until(driver => driver.FindElement(By.XPath("//input[@type='text'][@class='mud-input-slot mud-input-root mud-input-root-outlined']")));
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
+            Actions action = new Actions(driver);
+            driver.Navigate().GoToUrl("https://csgo.steamanalyst.com/");
+            await Task.Delay(6500);
+            string originalWindow = driver.CurrentWindowHandle;
+
+            foreach (var item in scrapPriceFromCSGO[counter++])
+            {
+                EnterTextIntoSearch(driver, wait, item.Name, "//input[@class='form-control']");
+                Thread.Sleep(2000);
+                var combobox = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='autocomplete-suggestion']")));
+                action.MoveToElement((IWebElement)combobox.Where(x => x.Text == item.Name)).Click().Perform();
+                Thread.Sleep(3000);
+            }
+
+        }
+        private static void EnterTextIntoSearch(IWebDriver driver, WebDriverWait wait, string name, string xpath)
+        {
+            var writeItem = wait.Until(driver => driver.FindElement(By.XPath(xpath)));
             writeItem.SendKeys(Keys.Control + "a");
             writeItem.SendKeys(Keys.Delete);
             writeItem.SendKeys($"{name}");
