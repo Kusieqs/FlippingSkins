@@ -235,23 +235,27 @@ namespace FlippingSkins
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             Actions action = new Actions(driver);
-            driver.Navigate().GoToUrl("https://pricempire.com/");
-            await Task.Delay(6500);
+            driver.Navigate().GoToUrl("https://csgostocks.de/");
+            await Task.Delay(3500);
+
+            var consider = wait.Until(driver => driver.FindElements(By.XPath("//p[@class='fc-button-label']")));
+            action.MoveToElement(consider[0]).Click().Perform();
+            await Task.Delay(1000);
+
 
             string originalWindow = driver.CurrentWindowHandle;
 
             foreach (var item in scrapPriceFromCSGO[counter++])
             {
                 Thread.Sleep(1000);
-                var searchClick = wait.Until(driver => driver.FindElement(By.XPath("//span[@class='hidden md:inline']")));
+                var searchClick = wait.Until(driver => driver.FindElement(By.XPath("//input[@placeholder='Search for items...']")));
                 action.MoveToElement(searchClick).Click().Perform();
                 Thread.Sleep(300);
-                EnterTextIntoSearch(driver, wait, item.Name, "//input[@class='w-full text-lg peer w-full bg-transparent text-slate-100 outline-none placeholder:text-slate-400']");
+                EnterTextIntoSearch(driver, wait, item.Name, "//input[@placeholder='Search for items...']");
+                var combobox = wait.Until(driver => driver.FindElements(By.XPath("//button[@class='dropdown-item ng-tns-c21-5 ng-trigger ng-trigger-typeaheadAnimation ng-star-inserted']")));
+                //action.MoveToElement(combobox.Where(x => x.Text == item.Name)).Click().Perform();
+                //Thread.Sleep(2000);
                 
-
-                var combobox = wait.Until(driver => driver.FindElements(By.XPath("//p[@class='truncate font-medium']")));
-                action.MoveToElement((IWebElement)combobox.Where(x => x.Text == item.Name)).Click().Perform();
-                Thread.Sleep(2000);
             }
 
         }
