@@ -49,7 +49,7 @@ internal class Program
                             {
                                 IWebDriver driver = new ChromeDriver(options);
                                 driver.Manage().Window.Maximize();
-                                await Scrap.ScrapPricesFromSteamMarket(driver);
+                                await Scrap.ScrapPricesFromSteamMarketRust(driver);
                                 driver.Quit();
                             }));
                         }
@@ -77,34 +77,47 @@ internal class Program
                     Console.ReadKey();
                     break;
 
-
                 case '2':
                     try
                     {
                         IWebDriver driver = LoginWebsites.CreatingWeb(configInformation,0);
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(driver);
+                        foreach (var item in Scrap.scrapCSGO)
+                        {
+                            Console.WriteLine(item.Name);
+                        }
+                        Console.WriteLine(Scrap.scrapCSGO.Count);
                         driver.Quit();
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapCSGO>> collections = new List<List<ScrapCSGO>>();
-                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / 5.0);
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / 1.0);
 
-                        for (int i = 0; i < 5; i++)
+                        for (int i = 0; i < 1; i++)
                         {
                             var collection = Scrap.scrapCSGO.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collections.Add(collection);
                         }
                         Scrap.scrapPriceFromCSGO = collections;
+
+
+                        for (int i = 0; i < collections.Count; i++)
+                        {
+                            Thread.Sleep(2500);
+                            tasks.Add(Task.Run(async () =>
+                            {
+                                IWebDriver driver = new ChromeDriver(options);
+                                driver.Manage().Window.Maximize();
+                                await Scrap.ScrapPricesFromSteamMarketCSGO(driver);
+                                driver.Quit();
+                            }));
+                        }
+                        await Task.WhenAll(tasks);
                     }
                     catch(Exception ex)
                     {
                         ExceptionMessage(ex);
                     }
 
-                    foreach(var item in Scrap.scrapCSGO)
-                    {
-                        Console.WriteLine(item.Name);
-                    }
-                    Console.WriteLine(Scrap.scrapCSGO.Count);
 
                     break;
                 case '3':
