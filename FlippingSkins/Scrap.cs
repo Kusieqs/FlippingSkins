@@ -252,9 +252,12 @@ namespace FlippingSkins
                 action.MoveToElement(searchClick).Click().Perform();
                 Thread.Sleep(300);
                 EnterTextIntoSearch(driver, wait, item.Name, "//input[@placeholder='Search for items...']");
-                var combobox = wait.Until(driver => driver.FindElements(By.XPath("//button[@class='dropdown-item ng-tns-c21-5 ng-trigger ng-trigger-typeaheadAnimation ng-star-inserted']")));
-                //action.MoveToElement(combobox.Where(x => x.Text == item.Name)).Click().Perform();
-                //Thread.Sleep(2000);
+                Thread.Sleep(500);
+                var element = wait.Until(driver => driver.FindElements(By.XPath("//button[@class='dropdown-item ng-tns-c21-0 ng-trigger ng-trigger-typeaheadAnimation ng-star-inserted']")));
+                Console.WriteLine(element.Count);
+                Console.ReadKey();
+                //var elementToSelect = combobox.Where(x => x.Text == item.Name).FirstOrDefault();
+                //action.MoveToElement(elementToSelect).Click().Perform();
                 
             }
 
