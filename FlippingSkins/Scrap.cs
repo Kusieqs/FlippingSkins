@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
@@ -250,14 +251,22 @@ namespace FlippingSkins
                 Thread.Sleep(1000);
                 var searchClick = wait.Until(driver => driver.FindElement(By.XPath("//input[@placeholder='Search for items...']")));
                 action.MoveToElement(searchClick).Click().Perform();
-                Thread.Sleep(300);
+                Thread.Sleep(500);
                 EnterTextIntoSearch(driver, wait, item.Name, "//input[@placeholder='Search for items...']");
                 Thread.Sleep(500);
-                var element = wait.Until(driver => driver.FindElements(By.XPath("//button[@class='dropdown-item ng-tns-c21-0 ng-trigger ng-trigger-typeaheadAnimation ng-star-inserted']")));
-                Console.WriteLine(element.Count);
-                Console.ReadKey();
-                //var elementToSelect = combobox.Where(x => x.Text == item.Name).FirstOrDefault();
-                //action.MoveToElement(elementToSelect).Click().Perform();
+                var elements = wait.Until(driver => driver.FindElements(By.XPath("//button[@role='option']//a//span")));
+                foreach (var element in elements)
+                {
+                    if(element.Text == item.Name)
+                    {
+                        action.MoveToElement(element).Click().Perform();
+                        break;
+                    }
+                }
+
+                //?
+                var price = wait.Until(driver => driver.FindElements(By.XPath("//tr[@class='tr-styling']//td//span")));
+                Console.WriteLine(price[1].Text);
                 
             }
 
