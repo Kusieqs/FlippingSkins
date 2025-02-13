@@ -16,15 +16,6 @@ namespace FlippingSkins
     internal static class Scrap
     {
 
-        public static readonly List<string> quality = new List<string>()
-        {
-            "Factory New",
-            "Minimal Wear",
-            "Field-Tested",
-            "Well-Worn",
-            "Battle-Scarred"
-        };
-
         public static List<ScrapRust> scrapRust = new List<ScrapRust>();
         public static List<List<ScrapRust>> scrapPriceFromRust;
         public static List<ScrapCSGO> scrapCSGO = new List<ScrapCSGO>();
@@ -102,27 +93,11 @@ namespace FlippingSkins
                 {
                     string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[i]);
                     price = price.Remove(0, 1).Trim();
-                    var imgElement = element[i];
-                    string altText = imgElement.GetAttribute("alt"); 
+                    string altText = element[i].GetAttribute("alt"); 
 
-                    bool statTrak = false;
-                    string qualityName = "";
-
-                    if (altText.StartsWith("StatTrak"))
-                    {
-                        statTrak = true;
-                    }
-
-                    foreach(string qual in quality)
-                    {
-                        if(altText.EndsWith("(" + qual + ")"))
-                        {
-                            qualityName = qual;
-                        }
-                    }
                     string name = altText.Trim();
 
-                    ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture), statTrak, qualityName);
+                    ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
 
                     if (!scrapCSGO.Any(x => x.Name == name))
                     {
@@ -264,10 +239,22 @@ namespace FlippingSkins
                     }
                 }
 
-                //?
-                var price = wait.Until(driver => driver.FindElements(By.XPath("//tr[@class='tr-styling']//td//span")));
-                Console.WriteLine(price[1].Text);
-                
+
+                string priceOfItem = "";
+                do
+                {
+
+                    Thread.Sleep(200);
+                    var trElements = wait.Until(driver => driver.FindElements(By.XPath("//td/span")));
+                    priceOfItem = trElements.First().Text;
+                    if (priceOfItem != "N/A")
+                        break;
+
+                } while (true);
+
+                item.PriceCSGOSkinsSteam = float.Parse(priceOfItem.Remove(0, 1), CultureInfo.InvariantCulture);
+                item.SetFeeOnSteam();
+                /// Wyświetlanie
             }
 
         }

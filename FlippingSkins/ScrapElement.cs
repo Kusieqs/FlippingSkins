@@ -44,14 +44,19 @@ namespace FlippingSkins
     {
         public float PriceCSGOSkinsMonkey { get; set; }
         public float PriceCSGOSkinsSteam { get; set; }
-        public bool StatTrak { get; set; }
-        public string Quality {  get; set; }
+        public float PriceCSGOSkinsWithFee { get; set; }
+        public double Difference { get; set; }
 
-        public ScrapCSGO(string name, float priceCSGOSkinsMonkey, bool statTrak, string quality) : base(name)
+        public ScrapCSGO(string name, float priceCSGOSkinsMonkey) : base(name)
         {
             PriceCSGOSkinsMonkey = priceCSGOSkinsMonkey;
-            StatTrak = statTrak;
-            Quality = quality;
+        }
+
+        public void SetFeeOnSteam()
+        {
+            float fee = 0.13f;
+            PriceCSGOSkinsWithFee = (float)Math.Round(PriceCSGOSkinsSteam * fee, 2);
+            Difference = Math.Round(PriceCSGOSkinsWithFee - PriceCSGOSkinsMonkey, 2);
         }
     }
 
