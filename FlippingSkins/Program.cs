@@ -66,13 +66,13 @@ internal class Program
                     {
                         item.SetFeeOnSkinsMonkey();
                     }
-
                     Console.Clear();
+
                     List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.Difference).Take(100).ToList();
                     Console.WriteLine("Best deals Steam -> SkinsMoneky:");
                     foreach (var item in bestDeals)
                     {
-                        Console.WriteLine($"Name: {item.Name}\nDifference: {item.Difference}$\nBuy order Steam: {item.PriceRustSteam}$\nSell SkinsMoneky {item.PriceRustSkinsWithFee}$\n\n");
+                        item.Description();
                     }
                     Console.ReadKey();
                     break;
@@ -90,9 +90,9 @@ internal class Program
                         driver.Quit();
                         List<Task> tasks = new List<Task>();
                         List<List<ScrapCSGO>> collections = new List<List<ScrapCSGO>>();
-                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / 1.0);
+                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / 5.0);
 
-                        for (int i = 0; i < 1; i++)
+                        for (int i = 0; i < 5; i++)
                         {
                             var collection = Scrap.scrapCSGO.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collections.Add(collection);
@@ -118,7 +118,13 @@ internal class Program
                         ExceptionMessage(ex);
                     }
 
-
+                    List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.OrderByDescending(x => x.Difference).Take(100).ToList();
+                    Console.WriteLine("Best deals SkinsMonkey -> Steam:");
+                    foreach (var item in bestDealsCsgo)
+                    {
+                        item.Description();
+                    }
+                    Console.ReadKey();
                     break;
                 case '3':
                     break;

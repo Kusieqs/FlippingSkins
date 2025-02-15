@@ -38,6 +38,11 @@ namespace FlippingSkins
             Difference = Math.Round(PriceRustSkinsWithFee - PriceRustSteam, 2);
         }
 
+        public void Description()
+        {
+            Console.WriteLine("Best deals Steam -> SkinsMoneky:");
+            Console.WriteLine($"Name: {Name}\nDifference: {Difference}$\nBuy order Steam: {PriceRustSteam}$\nSell SkinsMoneky {PriceRustSkinsWithFee}$\n\n");
+        }
     }
 
     internal class ScrapCSGO : ScrapElement
@@ -57,6 +62,12 @@ namespace FlippingSkins
             float fee = 0.13f;
             PriceCSGOSkinsWithFee = (float)Math.Round(PriceCSGOSkinsSteam * fee, 2);
             Difference = Math.Round(PriceCSGOSkinsWithFee - PriceCSGOSkinsMonkey, 2);
+        }
+
+        public void Description()
+        {
+            Console.WriteLine("Best deals Steam -> SkinsMoneky:");
+            Console.WriteLine($"Name: {Name}\nDifference: {Difference}$\nBuy order Steam: {PriceCSGOSkinsSteam}$\nSell SkinsMoneky {PriceCSGOSkinsMonkey}$\n\n");
         }
     }
 

@@ -239,22 +239,32 @@ namespace FlippingSkins
                     }
                 }
 
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
 
                 string priceOfItem = "";
                 do
                 {
-
                     Thread.Sleep(200);
                     var trElements = wait.Until(driver => driver.FindElements(By.XPath("//td/span")));
                     priceOfItem = trElements.First().Text;
+
+                    
                     if (priceOfItem != "N/A")
+                    {
+                        sw.Stop();
+                        item.PriceCSGOSkinsSteam = float.Parse(priceOfItem.Remove(0, 1), CultureInfo.InvariantCulture);
+                        item.SetFeeOnSteam();
                         break;
+                    }
+                    else if(sw.Elapsed.TotalSeconds > 5)
+                    {
+                        sw.Stop();
+                        break;
+                    }
 
+                    /// poprawka
                 } while (true);
-
-                item.PriceCSGOSkinsSteam = float.Parse(priceOfItem.Remove(0, 1), CultureInfo.InvariantCulture);
-                item.SetFeeOnSteam();
-                /// Wyświetlanie
             }
 
         }
