@@ -21,9 +21,7 @@ namespace FlippingSkins
     {
         public float PriceRustSkinsMonkey { get; set; }
         public float PriceRustSteam { get; set; }
-
         public float PriceRustSkinsWithFee {  get; set; }
-
         public double Difference {  get; set; }
 
         public ScrapRust(string name, float priceRustSkinsMonkey) : base (name)
@@ -40,8 +38,13 @@ namespace FlippingSkins
 
         public void Description()
         {
-            Console.WriteLine("Best deals Steam -> SkinsMoneky:");
-            Console.WriteLine($"Name: {Name}\nDifference: {Difference}$\nBuy order Steam: {PriceRustSteam}$\nSell SkinsMoneky {PriceRustSkinsWithFee}$\n\n");
+            Console.WriteLine("Best deals Steam -> SkinsMoneky\n\n");
+            Console.WriteLine($"Name:                    {Name}");
+            Console.WriteLine($"Difference:              {Difference}$");
+            Console.WriteLine($"Buy order Steam:         {PriceRustSteam}$");
+            Console.WriteLine($"Buy item on SkinsMonkey: {PriceRustSkinsMonkey}$");
+            Console.WriteLine($"Sell SkinsMonkey:        {PriceRustSkinsWithFee}$");
+            Console.WriteLine("\n");
         }
     }
 
