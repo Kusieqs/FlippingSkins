@@ -21,9 +21,7 @@ namespace FlippingSkins
     {
         public float PriceRustSkinsMonkey { get; set; }
         public float PriceRustSteam { get; set; }
-
         public float PriceRustSkinsWithFee {  get; set; }
-
         public double Difference {  get; set; }
 
         public ScrapRust(string name, float priceRustSkinsMonkey) : base (name)
@@ -38,20 +36,41 @@ namespace FlippingSkins
             Difference = Math.Round(PriceRustSkinsWithFee - PriceRustSteam, 2);
         }
 
+        public void Description()
+        {
+            Console.WriteLine("Best deals Steam -> SkinsMoneky\n\n");
+            Console.WriteLine($"Name:                    {Name}");
+            Console.WriteLine($"Difference:              {Difference}$");
+            Console.WriteLine($"Buy order Steam:         {PriceRustSteam}$");
+            Console.WriteLine($"Buy item on SkinsMonkey: {PriceRustSkinsMonkey}$");
+            Console.WriteLine($"Sell SkinsMonkey:        {PriceRustSkinsWithFee}$");
+            Console.WriteLine("\n");
+        }
     }
 
     internal class ScrapCSGO : ScrapElement
     {
         public float PriceCSGOSkinsMonkey { get; set; }
         public float PriceCSGOSkinsSteam { get; set; }
-        public bool StatTrak { get; set; }
-        public string Quality {  get; set; }
+        public float PriceCSGOSkinsWithFee { get; set; }
+        public double Difference { get; set; }
 
-        public ScrapCSGO(string name, float priceCSGOSkinsMonkey, bool statTrak, string quality) : base(name)
+        public ScrapCSGO(string name, float priceCSGOSkinsMonkey) : base(name)
         {
             PriceCSGOSkinsMonkey = priceCSGOSkinsMonkey;
-            StatTrak = statTrak;
-            Quality = quality;
+        }
+
+        public void SetFeeOnSteam()
+        {
+            float fee = 0.13f;
+            PriceCSGOSkinsWithFee = (float)Math.Round(PriceCSGOSkinsSteam * fee, 2);
+            Difference = Math.Round(PriceCSGOSkinsWithFee - PriceCSGOSkinsMonkey, 2);
+        }
+
+        public void Description()
+        {
+            Console.WriteLine("Best deals Steam -> SkinsMoneky:");
+            Console.WriteLine($"Name: {Name}\nDifference: {Difference}$\nBuy order Steam: {PriceCSGOSkinsSteam}$\nSell SkinsMoneky {PriceCSGOSkinsMonkey}$\n\n");
         }
     }
 

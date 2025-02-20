@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
@@ -15,56 +16,47 @@ namespace FlippingSkins
     internal static class Scrap
     {
 
-        public static readonly List<string> quality = new List<string>()
-        {
-            "Factory New",
-            "Minimal Wear",
-            "Field-Tested",
-            "Well-Worn",
-            "Battle-Scarred"
-        };
-
         public static List<ScrapRust> scrapRust = new List<ScrapRust>();
         public static List<List<ScrapRust>> scrapPriceFromRust;
         public static List<ScrapCSGO> scrapCSGO = new List<ScrapCSGO>();
         public static List<List<ScrapCSGO>> scrapPriceFromCSGO;
         public static int counter = 0;
+
+        /// <summary>
+        /// Scraping prices and names from rust items from skinsmonkey
+        /// </summary>
+        /// <param name="driver">IWebDriver object</param>
         public static void ScrapPricesAndNamesFromSkinsMonkey_Rust(IWebDriver driver)
         {
             Actions actions = new Actions(driver);
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             bool isToHighPrice = true;
+
             do
             {
                 Thread.Sleep(2000);
-                WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
                 var namesToScrap = wait.Until(driver => driver.FindElements(By.XPath("//span[@class='item-card__name']")));
-                var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
-                var pricesV2ToScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-card__info']")));
-
-                Console.Clear();
+                var pricesToScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
                 IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                Console.Clear();
 
                 for (int i = 0; i < namesToScrap.Count; i++)
                 {
                     string name = (string)js.ExecuteScript("return arguments[0].textContent;", namesToScrap[i]);
-                    string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[i]);
-                    string littlePrice = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV2ToScrap[i]);
-                    price = price.Remove(0, 1).Trim() + littlePrice;
-
-                    ScrapRust scrapElement = new ScrapRust(name, float.Parse(price, CultureInfo.InvariantCulture));
+                    string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesToScrap[i]);
+                    ScrapRust scrapElement = new ScrapRust(name, float.Parse(price.Remove(0, 1).Trim(), CultureInfo.InvariantCulture));
 
                     if (!scrapRust.Any(x => x.Name == name))
                     {
                         scrapRust.Add(scrapElement);
                     }
 
-                    if (scrapElement.PriceRustSkinsMonkey < 1.8)
+                    if (scrapElement.PriceRustSkinsMonkey < 1.5)
                     {
                         isToHighPrice = false;
                         break;
                     }
                 }
-
 
                 var scrollbar = namesToScrap[24];
                 actions.MoveToElement(scrollbar).Click().Build().Perform();
@@ -74,7 +66,6 @@ namespace FlippingSkins
                     actions.SendKeys(Keys.PageDown).Build().Perform();
                     Thread.Sleep(250);
                 }
-
             } while (isToHighPrice);
             
         }
@@ -101,27 +92,11 @@ namespace FlippingSkins
                 {
                     string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[i]);
                     price = price.Remove(0, 1).Trim();
-                    var imgElement = element[i];
-                    string altText = imgElement.GetAttribute("alt"); 
+                    string altText = element[i].GetAttribute("alt"); 
 
-                    bool statTrak = false;
-                    string qualityName = "";
-
-                    if (altText.StartsWith("StatTrak"))
-                    {
-                        statTrak = true;
-                    }
-
-                    foreach(string qual in quality)
-                    {
-                        if(altText.EndsWith("(" + qual + ")"))
-                        {
-                            qualityName = qual;
-                        }
-                    }
                     string name = altText.Trim();
 
-                    ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture), statTrak, qualityName);
+                    ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
 
                     if (!scrapCSGO.Any(x => x.Name == name))
                     {
@@ -250,12 +225,45 @@ namespace FlippingSkins
                 Thread.Sleep(1000);
                 var searchClick = wait.Until(driver => driver.FindElement(By.XPath("//input[@placeholder='Search for items...']")));
                 action.MoveToElement(searchClick).Click().Perform();
-                Thread.Sleep(300);
+                Thread.Sleep(500);
                 EnterTextIntoSearch(driver, wait, item.Name, "//input[@placeholder='Search for items...']");
-                var combobox = wait.Until(driver => driver.FindElements(By.XPath("//button[@class='dropdown-item ng-tns-c21-5 ng-trigger ng-trigger-typeaheadAnimation ng-star-inserted']")));
-                //action.MoveToElement(combobox.Where(x => x.Text == item.Name)).Click().Perform();
-                //Thread.Sleep(2000);
-                
+                Thread.Sleep(500);
+                var elements = wait.Until(driver => driver.FindElements(By.XPath("//button[@role='option']//a//span")));
+                foreach (var element in elements)
+                {
+                    if(element.Text == item.Name)
+                    {
+                        action.MoveToElement(element).Click().Perform();
+                        break;
+                    }
+                }
+
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+
+                string priceOfItem = "";
+                do
+                {
+                    Thread.Sleep(200);
+                    var trElements = wait.Until(driver => driver.FindElements(By.XPath("//td/span")));
+                    priceOfItem = trElements.First().Text;
+
+                    
+                    if (priceOfItem != "N/A")
+                    {
+                        sw.Stop();
+                        item.PriceCSGOSkinsSteam = float.Parse(priceOfItem.Remove(0, 1), CultureInfo.InvariantCulture);
+                        item.SetFeeOnSteam();
+                        break;
+                    }
+                    else if(sw.Elapsed.TotalSeconds > 5)
+                    {
+                        sw.Stop();
+                        break;
+                    }
+
+                    /// poprawka
+                } while (true);
             }
 
         }
