@@ -61,14 +61,13 @@ internal class Program
                         ExceptionMessage(ex);
                     }
 
-
                     foreach (var item in Scrap.scrapRust)
                     {
-                        item.SetFeeOnSkinsMonkey();
+                        item.SetProcent();
                     }
-                    Console.Clear();
+                    List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.ProcentOfPrice).Take(100).ToList();
 
-                    List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.Difference).Take(100).ToList();
+                    Console.Clear();
                     Console.WriteLine("Best deals Steam -> SkinsMoneky:");
                     foreach (var item in bestDeals)
                     {

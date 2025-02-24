@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace FlippingSkins
 {
-
     internal class ScrapElement
     {
+        protected const float feeRustSkinsMonkey = 0.84f;
         public string Name { get; set; }
 
         public ScrapElement(string name) 
@@ -21,29 +21,29 @@ namespace FlippingSkins
     {
         public float PriceRustSkinsMonkey { get; set; }
         public float PriceRustSteam { get; set; }
-        public float PriceRustSkinsWithFee {  get; set; }
-        public double Difference {  get; set; }
+        public double ProcentOfPrice {  get; set; }
 
         public ScrapRust(string name, float priceRustSkinsMonkey) : base (name)
         {
             PriceRustSkinsMonkey = priceRustSkinsMonkey;
         }
 
-        public void SetFeeOnSkinsMonkey()
+        private float PriceAfterFee() => (float)Math.Round(PriceRustSkinsMonkey * feeRustSkinsMonkey, 2);
+
+        private double ProfitOfBuy() => Math.Round(PriceAfterFee() - PriceRustSteam, 2);
+
+        public void SetProcent()
         {
-            float fee = 0.84f;
-            PriceRustSkinsWithFee = (float)Math.Round(PriceRustSkinsMonkey * fee,2);
-            Difference = Math.Round(PriceRustSkinsWithFee - PriceRustSteam, 2);
+            ProcentOfPrice = Math.Round(PriceAfterFee() * 100 / PriceRustSteam, 2);
         }
 
         public void Description()
         {
-            Console.WriteLine("Best deals Steam -> SkinsMoneky\n\n");
             Console.WriteLine($"Name:                    {Name}");
-            Console.WriteLine($"Difference:              {Difference}$");
+            Console.WriteLine($"Sell item on SkinsMonkey:{PriceAfterFee()}$");
             Console.WriteLine($"Buy order Steam:         {PriceRustSteam}$");
-            Console.WriteLine($"Buy item on SkinsMonkey: {PriceRustSkinsMonkey}$");
-            Console.WriteLine($"Sell SkinsMonkey:        {PriceRustSkinsWithFee}$");
+            Console.WriteLine($"Difference:              {ProfitOfBuy()}$");
+            Console.WriteLine($"% of price SkinsMonkey:  {ProcentOfPrice}$");
             Console.WriteLine("\n");
         }
     }
