@@ -39,11 +39,11 @@ namespace FlippingSkins
 
         public void Description()
         {
-            Console.WriteLine($"Name:                    {Name}");
-            Console.WriteLine($"Sell item on SkinsMonkey:{PriceAfterFee()}$");
-            Console.WriteLine($"Buy order Steam:         {PriceRustSteam}$");
-            Console.WriteLine($"Difference:              {ProfitOfBuy()}$");
-            Console.WriteLine($"% of price SkinsMonkey:  {ProcentOfPrice}$");
+            Console.WriteLine($"Name:                      {Name}");
+            Console.WriteLine($"Sell item on SkinsMonkey:  {PriceAfterFee()}$");
+            Console.WriteLine($"Buy order Steam:           {PriceRustSteam}$");
+            Console.WriteLine($"Difference:                {ProfitOfBuy()}$");
+            Console.WriteLine($"% of price SkinsMonkey:    {ProcentOfPrice}%");
             Console.WriteLine("\n");
         }
     }

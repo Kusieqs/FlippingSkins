@@ -65,6 +65,9 @@ internal class Program
                     {
                         item.SetProcent();
                     }
+
+                    // Usowanie elementu gdzie steam rust = 0
+                    
                     List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.ProcentOfPrice).Take(100).ToList();
 
                     Console.Clear();

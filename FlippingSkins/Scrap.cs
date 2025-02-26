@@ -58,7 +58,7 @@ namespace FlippingSkins
                     }
                 }
 
-                var scrollbar = namesToScrap[24];
+                var scrollbar = namesToScrap[19];
                 actions.MoveToElement(scrollbar).Click().Build().Perform();
 
                 for(int i = 0; i < 3; i ++)
@@ -148,7 +148,7 @@ namespace FlippingSkins
                     {
                         Thread.Sleep(1000);
                         counterOfReadingPrice++;
-                        var findElement = wait.Until(driver => driver.FindElements(By.XPath($"//p[span[text()='{item.Name}']]/following-sibling::p/span")));
+                        var findElement = wait.Until(driver => driver.FindElements(By.XPath($"//p[span[text()=\"{item.Name}\"]]/following-sibling::p/span")));
 
 
                         if (findElement.Count > 0)
@@ -157,7 +157,7 @@ namespace FlippingSkins
                             item.PriceRustSteam = float.Parse(findElement[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
                             break;
                         }
-                        else if (sw.Elapsed.Seconds > 45)
+                        else if (sw.Elapsed.Seconds > 20)
                         {
                             isCorrectWindow = true;
                             sw.Stop();
