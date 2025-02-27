@@ -22,10 +22,6 @@ namespace FlippingSkins
         public static List<List<ScrapCSGO>> scrapPriceFromCSGO;
         public static int counter = 0;
 
-        /// <summary>
-        /// Scraping prices and names from rust items from skinsmonkey
-        /// </summary>
-        /// <param name="driver">IWebDriver object</param>
         public static void ScrapPricesAndNamesFromSkinsMonkey_Rust(IWebDriver driver)
         {
             Actions actions = new Actions(driver);
@@ -182,13 +178,6 @@ namespace FlippingSkins
                 } while (true);
             }
         }
-
-        /// <summary>
-        /// Inputing text into textbox
-        /// </summary>
-        /// <param name="driver">IWebDriver object</param>
-        /// <param name="wait">WebDriverWait object</param>
-        /// <param name="name">Name of item</param>
         public static async Task ScrapPricesFromSteamMarketCSGO(IWebDriver driver)
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
@@ -250,6 +239,14 @@ namespace FlippingSkins
             }
 
         }
+
+
+        /// <summary>
+        /// Inputing text into textbox
+        /// </summary>
+        /// <param name="driver">IWebDriver object</param>
+        /// <param name="wait">WebDriverWait object</param>
+        /// <param name="name">Name of item</param>
         private static void EnterTextIntoSearch(IWebDriver driver, WebDriverWait wait, string name, string xpath)
         {
             var writeItem = wait.Until(driver => driver.FindElement(By.XPath(xpath)));
