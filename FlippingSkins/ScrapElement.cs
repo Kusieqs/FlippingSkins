@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FlippingSkins
 {
-    internal class ScrapElement
+    internal abstract class ScrapElement
     {
         protected const float feeRustSkinsMonkey = 0.84f;
         public string Name { get; set; }
@@ -15,6 +15,8 @@ namespace FlippingSkins
         {
             Name = name;
         }
+
+        public abstract void Description();
     }
 
     internal class ScrapRust : ScrapElement
@@ -37,7 +39,7 @@ namespace FlippingSkins
             ProcentOfPrice = Math.Round(PriceAfterFee() * 100 / PriceRustSteam, 2);
         }
 
-        public void Description()
+        public override void Description()
         {
             Console.WriteLine($"Name:                      {Name}");
             Console.WriteLine($"Sell item on SkinsMonkey:  {PriceAfterFee()}$");
@@ -67,7 +69,7 @@ namespace FlippingSkins
             Difference = Math.Round(PriceCSGOSkinsWithFee - PriceCSGOSkinsMonkey, 2);
         }
 
-        public void Description()
+        public override void Description()
         {
             Console.WriteLine("Best deals Steam -> SkinsMoneky:");
             Console.WriteLine($"Name: {Name}\nDifference: {Difference}$\nBuy order Steam: {PriceCSGOSkinsSteam}$\nSell SkinsMoneky {PriceCSGOSkinsMonkey}$\n\n");

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using FlippingSkins;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -43,22 +44,9 @@ internal class Program
                             var collection = Scrap.scrapRust.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collectionsRust.Add(collection);
                         }
+
                         Scrap.scrapPriceFromRust = collectionsRust;
-
-
-
-                        for (int i = 0; i < collectionsRust.Count; i++)
-                        {
-                            Thread.Sleep(2500);
-                            tasks.Add(Task.Run(async () =>
-                            {
-                                IWebDriver driver = new ChromeDriver(options);
-                                driver.Manage().Window.Maximize();
-                                await Scrap.ScrapPricesFromSteamMarketRust(driver);
-                                driver.Quit();
-                            }));
-                        }
-                        await Task.WhenAll(tasks);
+                        AsyncWebCreator(tasks, collectionsRust.Count, 1);
                         Scrap.counter = 0;
 
                         foreach (var item in Scrap.scrapRust)
@@ -68,14 +56,7 @@ internal class Program
 
                         Scrap.scrapRust.RemoveAll(x => x.PriceRustSkinsMonkey == 0 || x.PriceRustSteam == 0);
                         List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.ProcentOfPrice).Take(100).ToList();
-
-                        Console.Clear();
-                        Console.WriteLine("Best deals Steam -> SkinsMoneky:");
-                        foreach (var item in bestDeals)
-                        {
-                            item.Description();
-                        }
-                        Console.ReadKey();
+                        ShowingDeals("Best deals Steam -> SkinsMoneky:", bestDeals.Cast<ScrapElement>().ToList());
                         break;
 
                     case '2':
@@ -173,4 +154,50 @@ internal class Program
         Console.ReadKey();
     }
 
+    /// <summary>
+    /// Async method to run websites
+    /// </summary>
+    /// <param name="tasks"></param>
+    /// <param name="loops"></param>
+    /// <param name="mode"></param>
+    private async static void AsyncWebCreator(List<Task> tasks, int loops, int mode)
+    {
+        for (int i = 0; i < loops; i++)
+        {
+            Thread.Sleep(2500);
+            tasks.Add(Task.Run(async () =>
+            {
+                IWebDriver driver = new ChromeDriver(options);
+                driver.Manage().Window.Maximize();
+                if (mode == 1)
+                {
+                    await Scrap.ScrapPricesFromSteamMarketRust(driver);
+                }
+                else
+                {
+                    await Scrap.ScrapPricesFromSteamMarketCSGO(driver);
+                }
+                driver.Quit();
+            }));
+        }
+
+        await Task.WhenAll(tasks);
+    }
+
+    /// <summary>
+    /// Showing best deals
+    /// </summary>
+    /// <param name="themeOfItems"></param>
+    /// <param name="bestDeals"></param>
+    private static void ShowingDeals(string themeOfItems, List<ScrapElement> bestDeals)
+    {
+        Console.Clear();
+        Console.WriteLine(themeOfItems);
+        Console.WriteLine(bestDeals.Count);
+        foreach (var item in bestDeals)
+        {
+            item.Description();
+        }
+        Console.ReadKey();
+    }
 }
