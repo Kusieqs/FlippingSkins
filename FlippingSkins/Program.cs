@@ -38,7 +38,7 @@ internal class Program
 
                         List<List<ScrapRust>> collectionsRust = new List<List<ScrapRust>>();
                         sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / 10.0);
-
+                        
                         for (int i = 0; i < 10; i++)
                         {
                             var collection = Scrap.scrapRust.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
@@ -54,7 +54,6 @@ internal class Program
                             item.SetProcent();
                         }
 
-                        Scrap.scrapRust.RemoveAll(x => x.PriceRustSkinsMonkey == 0 || x.PriceRustSteam == 0);
                         List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.ProcentOfPrice).Take(100).ToList();
                         ShowingDeals("Best deals Steam -> SkinsMoneky:", bestDeals.Cast<ScrapElement>().ToList());
                         break;

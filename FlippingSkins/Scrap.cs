@@ -150,18 +150,17 @@ namespace FlippingSkins
                         if (findElement.Count > 0)
                         {
                             isCorrectWindow = true;
-                            item.PriceRustSteam = float.Parse(findElement[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
+                            scrapRust.Where(x => x.Name == item.Name).First().PriceRustSteam = float.Parse(findElement[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
                             break;
                         }
                         else if (sw.Elapsed.Seconds > 20)
                         {
                             isCorrectWindow = true;
-                            sw.Stop();
                             break;
                         }
 
                     } while (++x < 9);
-
+                    sw.Stop();
 
                     if (isCorrectWindow)
                         break;
