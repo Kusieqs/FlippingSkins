@@ -22,10 +22,6 @@ namespace FlippingSkins
         public static List<List<ScrapCSGO>> scrapPriceFromCSGO;
         public static int counter = 0;
 
-        /// <summary>
-        /// Scraping prices and names from rust items from skinsmonkey
-        /// </summary>
-        /// <param name="driver">IWebDriver object</param>
         public static void ScrapPricesAndNamesFromSkinsMonkey_Rust(IWebDriver driver)
         {
             Actions actions = new Actions(driver);
@@ -58,7 +54,7 @@ namespace FlippingSkins
                     }
                 }
 
-                var scrollbar = namesToScrap[24];
+                var scrollbar = namesToScrap[19];
                 actions.MoveToElement(scrollbar).Click().Build().Perform();
 
                 for(int i = 0; i < 3; i ++)
@@ -134,10 +130,8 @@ namespace FlippingSkins
 
             foreach (var item in scrapPriceFromRust[counter++])
             {
-
                 int counterOfReadingPrice = 0;
                 EnterTextIntoSearch(driver, wait, item.Name, "//input[@type='text'][@class='mud-input-slot mud-input-root mud-input-root-outlined']");
-                bool bug = false;
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
 
@@ -150,23 +144,23 @@ namespace FlippingSkins
                     {
                         Thread.Sleep(1000);
                         counterOfReadingPrice++;
-                        var findElement = wait.Until(driver => driver.FindElements(By.XPath($"//span[text()=\"{item.Name}\"]")));
+                        var findElement = wait.Until(driver => driver.FindElements(By.XPath($"//p[span[text()=\"{item.Name}\"]]/following-sibling::p/span")));
+
 
                         if (findElement.Count > 0)
                         {
-                            action.MoveToElement(findElement[0]).Click().Perform();
                             isCorrectWindow = true;
+                            scrapRust.Where(x => x.Name == item.Name).First().PriceRustSteam = float.Parse(findElement[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
                             break;
                         }
-                        else if (sw.Elapsed.Seconds > 45)
+                        else if (sw.Elapsed.Seconds > 20)
                         {
                             isCorrectWindow = true;
-                            bug = true;
-                            sw.Stop();
                             break;
                         }
 
                     } while (++x < 9);
+                    sw.Stop();
 
                     if (isCorrectWindow)
                         break;
@@ -181,31 +175,8 @@ namespace FlippingSkins
                             EnterTextIntoSearch(driver,wait, item.Name, "//input[@type='text'][@class='mud-input-slot mud-input-root mud-input-root-outlined']");
                     }
                 } while (true);
-
-                if (bug)
-                    continue;
-
-                foreach (string windowHandle in driver.WindowHandles)
-                {
-                    if (windowHandle != originalWindow)
-                    {
-                        driver.SwitchTo().Window(windowHandle);
-                        break;
-                    }
-                }
-
-                SearchingPrice(driver, item);
-                driver.Close();
-                driver.SwitchTo().Window(originalWindow);
             }
         }
-
-        /// <summary>
-        /// Inputing text into textbox
-        /// </summary>
-        /// <param name="driver">IWebDriver object</param>
-        /// <param name="wait">WebDriverWait object</param>
-        /// <param name="name">Name of item</param>
         public static async Task ScrapPricesFromSteamMarketCSGO(IWebDriver driver)
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
@@ -267,39 +238,20 @@ namespace FlippingSkins
             }
 
         }
+
+
+        /// <summary>
+        /// Inputing text into textbox
+        /// </summary>
+        /// <param name="driver">IWebDriver object</param>
+        /// <param name="wait">WebDriverWait object</param>
+        /// <param name="name">Name of item</param>
         private static void EnterTextIntoSearch(IWebDriver driver, WebDriverWait wait, string name, string xpath)
         {
             var writeItem = wait.Until(driver => driver.FindElement(By.XPath(xpath)));
             writeItem.SendKeys(Keys.Control + "a");
             writeItem.SendKeys(Keys.Delete);
             writeItem.SendKeys($"{name}");
-        }
-
-        /// <summary>
-        /// Searching price in website
-        /// </summary>
-        /// <param name="driver">IWebDriver object</param>
-        /// <param name="item">Name of item to scrap price</param>
-        private static void SearchingPrice(IWebDriver driver, ScrapRust item)
-        {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            do
-            {
-                var priceElements = driver.FindElements(By.XPath("//h6[contains(@class, 'mud-typography mud-typography-h6 pa-2')]//span[contains(text(), '$')]"));
-
-                if (priceElements.Count > 0)
-                {
-                    item.PriceRustSteam = float.Parse(priceElements[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
-                    break;
-                }
-                else if (sw.Elapsed.TotalSeconds > 45)
-                {
-                    break;
-                }
-                Thread.Sleep(500);
-            } while (true);
-            sw.Stop();
         }
     }
 }

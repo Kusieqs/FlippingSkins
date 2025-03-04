@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using FlippingSkins;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -21,86 +22,59 @@ internal class Program
 
             Console.Write("\n\n1. Start scraping prices rust STEAM->SKINSMONKEY\n2. Start scraping prices csgo SKINSMONKEY->STEAM\n3. Information\n4. Exit\n\nNumber: ");
             ConsoleKeyInfo key = Console.ReadKey();
+            IWebDriver webDriver;
+            List<Task> tasks = new List<Task>();
+            int sizeOfCollections = 0;
             Console.WriteLine("\n\n");
 
-            switch (key.KeyChar)
+            try
             {
-                case '1':
-                    try
-                    {
-                        IWebDriver driver = LoginWebsites.CreatingWeb(configInformation,1);
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_Rust(driver);
-                        driver.Quit();
-                        List<Task> tasks = new List<Task>();
-                        List<List<ScrapRust>> collections = new List<List<ScrapRust>>();
-                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / 5.0);
+                switch (key.KeyChar)
+                {
+                    case '1':
+                        webDriver = LoginWebsites.CreatingWeb(configInformation, 1);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_Rust(webDriver);
+                        webDriver.Quit();
 
-                        for (int i = 0; i < 5; i++)
+                        List<List<ScrapRust>> collectionsRust = new List<List<ScrapRust>>();
+                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / 10.0);
+                        
+                        for (int i = 0; i < 10; i++)
                         {
                             var collection = Scrap.scrapRust.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
-                            collections.Add(collection);
+                            collectionsRust.Add(collection);
                         }
 
-                        Scrap.scrapPriceFromRust = collections;
-                        for (int i = 0; i < collections.Count; i++)
-                        {
-                            Thread.Sleep(2500);
-                            tasks.Add(Task.Run(async () =>
-                            {
-                                IWebDriver driver = new ChromeDriver(options);
-                                driver.Manage().Window.Maximize();
-                                await Scrap.ScrapPricesFromSteamMarketRust(driver);
-                                driver.Quit();
-                            }));
-                        }
-                        await Task.WhenAll(tasks);
+                        Scrap.scrapPriceFromRust = collectionsRust;
+                        await AsyncWebCreator(tasks, collectionsRust.Count, 1);
                         Scrap.counter = 0;
-                    }
-                    catch(Exception ex)
-                    {
-                        ExceptionMessage(ex);
-                    }
 
-
-                    foreach (var item in Scrap.scrapRust)
-                    {
-                        item.SetFeeOnSkinsMonkey();
-                    }
-                    Console.Clear();
-
-                    List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.Difference).Take(100).ToList();
-                    Console.WriteLine("Best deals Steam -> SkinsMoneky:");
-                    foreach (var item in bestDeals)
-                    {
-                        item.Description();
-                    }
-                    Console.ReadKey();
-                    break;
-
-                case '2':
-                    try
-                    {
-                        IWebDriver driver = LoginWebsites.CreatingWeb(configInformation,0);
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(driver);
-                        foreach (var item in Scrap.scrapCSGO)
+                        foreach (var item in Scrap.scrapRust)
                         {
-                            Console.WriteLine(item.Name);
+                            item.SetProcent();
                         }
-                        Console.WriteLine(Scrap.scrapCSGO.Count);
-                        driver.Quit();
-                        List<Task> tasks = new List<Task>();
-                        List<List<ScrapCSGO>> collections = new List<List<ScrapCSGO>>();
-                        int sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / 5.0);
 
-                        for (int i = 0; i < 5; i++)
+                        List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.ProcentOfPrice).Take(100).ToList();
+                        ShowingDeals("Best deals Steam -> SkinsMoneky:", bestDeals.Cast<ScrapElement>().ToList());
+                        break;
+
+                    case '2':
+                        webDriver = LoginWebsites.CreatingWeb(configInformation, 0);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver);
+                        webDriver.Quit();
+
+                        List<List<ScrapCSGO>> collectionsCSGO = new List<List<ScrapCSGO>>();
+                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / 10.0);
+
+                        for (int i = 0; i < 10; i++)
                         {
                             var collection = Scrap.scrapCSGO.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
-                            collections.Add(collection);
+                            collectionsCSGO.Add(collection);
                         }
-                        Scrap.scrapPriceFromCSGO = collections;
+                        Scrap.scrapPriceFromCSGO = collectionsCSGO;
 
 
-                        for (int i = 0; i < collections.Count; i++)
+                        for (int i = 0; i < collectionsCSGO.Count; i++)
                         {
                             Thread.Sleep(2500);
                             tasks.Add(Task.Run(async () =>
@@ -112,27 +86,30 @@ internal class Program
                             }));
                         }
                         await Task.WhenAll(tasks);
-                    }
-                    catch(Exception ex)
-                    {
-                        ExceptionMessage(ex);
-                    }
+                        Scrap.counter = 0;
 
-                    List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.OrderByDescending(x => x.Difference).Take(100).ToList();
-                    Console.WriteLine("Best deals SkinsMonkey -> Steam:");
-                    foreach (var item in bestDealsCsgo)
-                    {
-                        item.Description();
-                    }
-                    Console.ReadKey();
-                    break;
-                case '3':
-                    break;
-                case '4':
-                    Environment.Exit(0);
-                    break;
+                        /// POPRAWKA
+                        List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.OrderByDescending(x => x.Difference).Take(100).ToList();
+                        Console.WriteLine("Best deals SkinsMonkey -> Steam:");
+                        foreach (var item in bestDealsCsgo)
+                        {
+                            item.Description();
+                        }
+                        Console.ReadKey();
+                        break;
+                    case '3':
+                        break;
+                    case '4':
+                        Environment.Exit(0);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionMessage(ex);
             }
 
+            tasks.Clear();
             Console.ReadKey();
             Console.Clear();
 
@@ -161,6 +138,10 @@ internal class Program
     /// <returns>ConfigInformation object</returns>
     private static ConfigInformation SettingConfig() => new ConfigInformation("flipingSkins", "vR5QKwJ252H%kpu", "flippingskins@gmail.com", "FlippingSkins123");
 
+    /// <summary>
+    /// Exception message
+    /// </summary>
+    /// <param name="ex"></param>
     private static void ExceptionMessage(Exception ex)
     {
         Console.Clear();
@@ -172,4 +153,50 @@ internal class Program
         Console.ReadKey();
     }
 
+    /// <summary>
+    /// Async method to run websites
+    /// </summary>
+    /// <param name="tasks"></param>
+    /// <param name="loops"></param>
+    /// <param name="mode"></param>
+    private async static Task AsyncWebCreator(List<Task> tasks, int loops, int mode)
+    {
+        for (int i = 0; i < loops; i++)
+        {
+            Thread.Sleep(2500);
+            tasks.Add(Task.Run(async () =>
+            {
+                IWebDriver driver = new ChromeDriver(options);
+                driver.Manage().Window.Maximize();
+                if (mode == 1)
+                {
+                    await Scrap.ScrapPricesFromSteamMarketRust(driver);
+                }
+                else
+                {
+                    await Scrap.ScrapPricesFromSteamMarketCSGO(driver);
+                }
+                driver.Quit();
+            }));
+        }
+
+        await Task.WhenAll(tasks);
+    }
+
+    /// <summary>
+    /// Showing best deals
+    /// </summary>
+    /// <param name="themeOfItems"></param>
+    /// <param name="bestDeals"></param>
+    private static void ShowingDeals(string themeOfItems, List<ScrapElement> bestDeals)
+    {
+        Console.Clear();
+        Console.WriteLine("\n\n");
+        Console.WriteLine(themeOfItems);
+        foreach (var item in bestDeals)
+        {
+            item.Description();
+        }
+        Console.ReadKey();
+    }
 }
