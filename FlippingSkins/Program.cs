@@ -46,7 +46,7 @@ internal class Program
                         }
 
                         Scrap.scrapPriceFromRust = collectionsRust;
-                        AsyncWebCreator(tasks, collectionsRust.Count, 1);
+                        await AsyncWebCreator(tasks, collectionsRust.Count, 1);
                         Scrap.counter = 0;
 
                         foreach (var item in Scrap.scrapRust)
@@ -159,7 +159,7 @@ internal class Program
     /// <param name="tasks"></param>
     /// <param name="loops"></param>
     /// <param name="mode"></param>
-    private async static void AsyncWebCreator(List<Task> tasks, int loops, int mode)
+    private async static Task AsyncWebCreator(List<Task> tasks, int loops, int mode)
     {
         for (int i = 0; i < loops; i++)
         {
@@ -191,8 +191,8 @@ internal class Program
     private static void ShowingDeals(string themeOfItems, List<ScrapElement> bestDeals)
     {
         Console.Clear();
+        Console.WriteLine("\n\n");
         Console.WriteLine(themeOfItems);
-        Console.WriteLine(bestDeals.Count);
         foreach (var item in bestDeals)
         {
             item.Description();
