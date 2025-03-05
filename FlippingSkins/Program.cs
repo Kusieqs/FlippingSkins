@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using FlippingSkins;
 using OpenQA.Selenium;
@@ -35,9 +36,9 @@ internal class Program
                         webDriver.Quit();
 
                         List<List<ScrapRust>> collectionsRust = new List<List<ScrapRust>>();
-                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / 10.0);
+                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / Utils.COUNTWEB);
                         
-                        for (int i = 0; i < 10; i++)
+                        for (int i = 0; i < Utils.COUNTWEB; i++)
                         {
                             var collection = Scrap.scrapRust.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collectionsRust.Add(collection);
@@ -67,9 +68,9 @@ internal class Program
                         webDriver.Quit();
 
                         List<List<ScrapCSGO>> collectionsCSGO = new List<List<ScrapCSGO>>();
-                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / 10.0);
+                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / Utils.COUNTWEB);
 
-                        for (int i = 0; i < 10; i++)
+                        for (int i = 0; i < Utils.COUNTWEB; i++)
                         {
                             var collection = Scrap.scrapCSGO.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collectionsCSGO.Add(collection);
@@ -80,12 +81,12 @@ internal class Program
                         Scrap.counter = 0;
 
                         List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.
-                            OrderByDescending(x => x.Difference).
+                            OrderByDescending(x => x.ProcentOfPrice).
                             Take(100).
                             ToList();
 
                         bestDealsCsgo.RemoveAll(x => x.PriceCSGOSkinsMonkey == 0 || x.PriceCSGOSkinsSteam == 0);
-                        ShowingDeals("Best deals Steam -> SkinsMonkey:", bestDealsCsgo.Cast<ScrapElement>().ToList());
+                        ShowingDeals("Best deals SkinsMonkey -> Steam:", bestDealsCsgo.Cast<ScrapElement>().ToList());
                         break;
                     case '3':
                         break;

@@ -11,6 +11,8 @@ namespace FlippingSkins
     {
         public static ChromeOptions options = new ChromeOptions();
 
+        public const double COUNTWEB = 10.0;
+
         /// <summary>
         /// Setting config to login into steam and gmail
         /// </summary>
