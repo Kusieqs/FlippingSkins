@@ -18,7 +18,7 @@ namespace FlippingSkins
         {
             configInformation = config;
 
-            IWebDriver driver = new ChromeDriver(Program.options);
+            IWebDriver driver = new ChromeDriver(Utils.options);
             driver.Manage().Window.Maximize();
             driver.Navigate().GoToUrl("https://www.skinsmonkey.com");
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
@@ -98,7 +98,7 @@ namespace FlippingSkins
 
         private static string GmailGuard()
         {
-            IWebDriver gmail = new ChromeDriver(Program.options);
+            IWebDriver gmail = new ChromeDriver(Utils.options);
             gmail.Manage().Window.Maximize();
             gmail.Navigate().GoToUrl("https://workspace.google.com/intl/pl/gmail/");
             WebDriverWait wait = new WebDriverWait(gmail, TimeSpan.FromSeconds(5));

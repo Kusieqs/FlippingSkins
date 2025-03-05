@@ -7,12 +7,10 @@ using OpenQA.Selenium.Support.UI;
 
 internal class Program
 {
-    public static ChromeOptions options = new ChromeOptions();
     private static async Task Main(string[] args)
     {
-        ConfigInformation configInformation = SettingConfig();
-
-        StartConfig();
+        ConfigInformation configInformation = Utils.SettingConfig();
+        Utils.StartConfig();
 
         do
         {
@@ -54,12 +52,17 @@ internal class Program
                             item.SetProcent();
                         }
 
-                        List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.ProcentOfPrice).Take(100).ToList();
-                        ShowingDeals("Best deals Steam -> SkinsMoneky:", bestDeals.Cast<ScrapElement>().ToList());
+                        List<ScrapRust> bestDealsRust = Scrap.scrapRust.
+                            OrderByDescending(x => x.ProcentOfPrice).
+                            Take(100).
+                            ToList();
+
+                        bestDealsRust.RemoveAll(x => x.PriceRustSteam == 0 || x.PriceRustSkinsMonkey == 0);
+                        ShowingDeals("Best deals Steam -> SkinsMonkey:", bestDealsRust.Cast<ScrapElement>().ToList());
                         break;
 
                     case '2':
-                        webDriver = LoginWebsites.CreatingWeb(configInformation, 0);
+                        webDriver = LoginWebsites.CreatingWeb(configInformation, 2);
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver);
                         webDriver.Quit();
 
@@ -71,31 +74,18 @@ internal class Program
                             var collection = Scrap.scrapCSGO.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collectionsCSGO.Add(collection);
                         }
+
                         Scrap.scrapPriceFromCSGO = collectionsCSGO;
-
-
-                        for (int i = 0; i < collectionsCSGO.Count; i++)
-                        {
-                            Thread.Sleep(2500);
-                            tasks.Add(Task.Run(async () =>
-                            {
-                                IWebDriver driver = new ChromeDriver(options);
-                                driver.Manage().Window.Maximize();
-                                await Scrap.ScrapPricesFromSteamMarketCSGO(driver);
-                                driver.Quit();
-                            }));
-                        }
-                        await Task.WhenAll(tasks);
+                        await AsyncWebCreator(tasks, collectionsCSGO.Count, 2);
                         Scrap.counter = 0;
 
-                        /// POPRAWKA
-                        List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.OrderByDescending(x => x.Difference).Take(100).ToList();
-                        Console.WriteLine("Best deals SkinsMonkey -> Steam:");
-                        foreach (var item in bestDealsCsgo)
-                        {
-                            item.Description();
-                        }
-                        Console.ReadKey();
+                        List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.
+                            OrderByDescending(x => x.Difference).
+                            Take(100).
+                            ToList();
+
+                        bestDealsCsgo.RemoveAll(x => x.PriceCSGOSkinsMonkey == 0 || x.PriceCSGOSkinsSteam == 0);
+                        ShowingDeals("Best deals Steam -> SkinsMonkey:", bestDealsCsgo.Cast<ScrapElement>().ToList());
                         break;
                     case '3':
                         break;
@@ -106,7 +96,7 @@ internal class Program
             }
             catch (Exception ex)
             {
-                ExceptionMessage(ex);
+                Utils.ExceptionMessage(ex);
             }
 
             tasks.Clear();
@@ -114,43 +104,6 @@ internal class Program
             Console.Clear();
 
         } while (true);
-    }
-
-    /// <summary>
-    /// Special arguments to set chrome
-    /// </summary>
-    private static void StartConfig()
-    {
-        //options.AddArgument("--headless");
-        options.AddArgument("--disable-blink-features=AutomationControlled");
-        options.AddExcludedArgument("enable-automation");
-        options.AddAdditionalOption("useAutomationExtension", false);
-        options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36");
-        options.AddArgument("--no-sandbox");
-        options.AddArgument("--disable-dev-shm-usage");
-        options.AddArgument("--remote-allow-origins=*");
-        options.AddArgument("--ignore-certificate-errors");
-    }
-
-    /// <summary>
-    /// Setting config to login into steam and gmail
-    /// </summary>
-    /// <returns>ConfigInformation object</returns>
-    private static ConfigInformation SettingConfig() => new ConfigInformation("flipingSkins", "vR5QKwJ252H%kpu", "flippingskins@gmail.com", "FlippingSkins123");
-
-    /// <summary>
-    /// Exception message
-    /// </summary>
-    /// <param name="ex"></param>
-    private static void ExceptionMessage(Exception ex)
-    {
-        Console.Clear();
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("ERROR!!!");
-        Console.ResetColor();
-        Console.WriteLine(ex.ToString());
-        Console.WriteLine("Click enter to continue");
-        Console.ReadKey();
     }
 
     /// <summary>
@@ -166,7 +119,7 @@ internal class Program
             Thread.Sleep(2500);
             tasks.Add(Task.Run(async () =>
             {
-                IWebDriver driver = new ChromeDriver(options);
+                IWebDriver driver = new ChromeDriver(Utils.options);
                 driver.Manage().Window.Maximize();
                 if (mode == 1)
                 {
