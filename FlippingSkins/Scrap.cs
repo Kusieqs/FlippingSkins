@@ -68,20 +68,19 @@ namespace FlippingSkins
         public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver)
         {
             bool isToHighPrice = true;
+            int loopCounter = 0;
 
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
             Actions action = new Actions(driver);
             action.Click(sorting[2]).Build().Perform();
-            sorting[2].SendKeys("1.2");
+            sorting[2].SendKeys("50" + Keys.Enter);
 
             do
             {
                 Thread.Sleep(2000);
                 var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
                 var element = wait.Until(driver => driver.FindElements(By.CssSelector("img.item-image")));
-
-                Console.Clear();
                 IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 
                 for (int i = 0; i < pricesV1toScrap.Count; i++)
@@ -99,7 +98,7 @@ namespace FlippingSkins
                         scrapCSGO.Add(scrapElement);
                     }
 
-                    if (scrapElement.PriceCSGOSkinsMonkey < 1)
+                    if (scrapElement.PriceCSGOSkinsMonkey < 1 || loopCounter == 50)
                     {
                         isToHighPrice = false;
                         break;
@@ -107,8 +106,7 @@ namespace FlippingSkins
 
                 }
 
-
-                var scrollbar = pricesV1toScrap[29];
+                var scrollbar = pricesV1toScrap[19];
                 action.MoveToElement(scrollbar).Click().Build().Perform();
 
                 for (int i = 0; i < 4; i++)
@@ -116,6 +114,8 @@ namespace FlippingSkins
                     action.SendKeys(Keys.PageDown).Build().Perform();
                     Thread.Sleep(250);
                 }
+
+                loopCounter++;
 
             } while(isToHighPrice);
 
@@ -150,7 +150,8 @@ namespace FlippingSkins
                         if (findElement.Count > 0)
                         {
                             isCorrectWindow = true;
-                            scrapRust.Where(x => x.Name == item.Name).First().PriceRustSteam = float.Parse(findElement[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
+                            item.PriceRustSteam = float.Parse(findElement[0].Text.Remove(0, 1), CultureInfo.InvariantCulture);
+                            item.SetProcent();
                             break;
                         }
                         else if (sw.Elapsed.Seconds > 20)
@@ -224,7 +225,7 @@ namespace FlippingSkins
                     {
                         sw.Stop();
                         item.PriceCSGOSkinsSteam = float.Parse(priceOfItem.Remove(0, 1), CultureInfo.InvariantCulture);
-                        item.SetFeeOnSteam();
+                        item.SetProcent();
                         break;
                     }
                     else if(sw.Elapsed.TotalSeconds > 5)

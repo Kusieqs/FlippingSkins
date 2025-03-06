@@ -48,11 +48,6 @@ internal class Program
                         await AsyncWebCreator(tasks, collectionsRust.Count, 1);
                         Scrap.counter = 0;
 
-                        foreach (var item in Scrap.scrapRust)
-                        {
-                            item.SetProcent();
-                        }
-
                         List<ScrapRust> bestDealsRust = Scrap.scrapRust.
                             OrderByDescending(x => x.ProcentOfPrice).
                             Take(100).
