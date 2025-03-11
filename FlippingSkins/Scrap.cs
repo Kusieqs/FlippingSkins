@@ -65,7 +65,7 @@ namespace FlippingSkins
             } while (isToHighPrice);
             
         }
-        public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver)
+        public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver, Tuple<float,float> tuple)
         {
             bool isToHighPrice = true;
             int loopCounter = 0;
@@ -73,8 +73,15 @@ namespace FlippingSkins
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
             Actions action = new Actions(driver);
+
+            action.Click(sorting[1]).Build().Perform();
+            sorting[1].SendKeys(Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.ArrowRight + Keys.Backspace);
+            sorting[1].SendKeys(tuple.Item1.ToString());
+
             action.Click(sorting[2]).Build().Perform();
-            sorting[2].SendKeys("50" + Keys.Enter);
+            sorting[2].SendKeys(tuple.Item2.ToString() + Keys.Enter);
+
+            Thread.Sleep(2000);
 
             do
             {
@@ -98,7 +105,7 @@ namespace FlippingSkins
                         scrapCSGO.Add(scrapElement);
                     }
 
-                    if (scrapElement.PriceCSGOSkinsMonkey < 1 || loopCounter == 50)
+                    if (scrapElement.PriceCSGOSkinsMonkey < 1 || loopCounter == 100)
                     {
                         isToHighPrice = false;
                         break;
