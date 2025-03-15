@@ -8,14 +8,14 @@ namespace FlippingSkins
 {
     internal abstract class ScrapElement
     {
-        protected const float feeRustSkinsMonkey = 0.84f;
+        protected const float FEESKINSMONKEY = 0.84f;
+        protected const float FEECSGOSTEAM = 0.87f;
         public string Name { get; set; }
 
         public ScrapElement(string name) 
         {
             Name = name;
         }
-
         public abstract void Description();
     }
 
@@ -30,7 +30,7 @@ namespace FlippingSkins
             PriceRustSkinsMonkey = priceRustSkinsMonkey;
         }
 
-        private float PriceAfterFee() => (float)Math.Round(PriceRustSkinsMonkey * feeRustSkinsMonkey, 2);
+        private float PriceAfterFee() => (float)Math.Round(PriceRustSkinsMonkey * FEESKINSMONKEY, 2);
 
         private double ProfitOfBuy() => Math.Round(PriceAfterFee() - PriceRustSteam, 2);
 
@@ -54,25 +54,31 @@ namespace FlippingSkins
     {
         public float PriceCSGOSkinsMonkey { get; set; }
         public float PriceCSGOSkinsSteam { get; set; }
-        public float PriceCSGOSkinsWithFee { get; set; }
-        public double Difference { get; set; }
+        public double ProcentOfPrice { get; set; }
 
         public ScrapCSGO(string name, float priceCSGOSkinsMonkey) : base(name)
         {
             PriceCSGOSkinsMonkey = priceCSGOSkinsMonkey;
         }
 
-        public void SetFeeOnSteam()
+
+        private float PriceAfterFee() => (float)Math.Round(PriceCSGOSkinsSteam * FEECSGOSTEAM, 2);
+
+        private double ProfitOfBuy() => Math.Round(PriceAfterFee() - PriceCSGOSkinsMonkey, 2);
+
+        public void SetProcent()
         {
-            float fee = 0.13f;
-            PriceCSGOSkinsWithFee = (float)Math.Round(PriceCSGOSkinsSteam * fee, 2);
-            Difference = Math.Round(PriceCSGOSkinsWithFee - PriceCSGOSkinsMonkey, 2);
+            ProcentOfPrice = Math.Round(PriceAfterFee() * 100 / PriceCSGOSkinsMonkey, 2);
         }
 
         public override void Description()
         {
-            Console.WriteLine("Best deals Steam -> SkinsMoneky:");
-            Console.WriteLine($"Name: {Name}\nDifference: {Difference}$\nBuy order Steam: {PriceCSGOSkinsSteam}$\nSell SkinsMoneky {PriceCSGOSkinsMonkey}$\n\n");
+            Console.WriteLine($"Name:                {Name}");
+            Console.WriteLine($"Sell item on Steam:  {PriceAfterFee()}$");
+            Console.WriteLine($"Buy on SkinsMonkey:  {PriceCSGOSkinsMonkey}$");
+            Console.WriteLine($"Difference:          {ProfitOfBuy()}$");
+            Console.WriteLine($"% of price Steam:    {ProcentOfPrice}%");
+            Console.WriteLine("\n");
         }
     }
 

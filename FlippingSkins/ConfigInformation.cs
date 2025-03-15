@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FlippingSkins
 {
-    internal class ConfigInformation
+    public class ConfigInformation
     {
         public string loginToSteam { get; private set; }
         public string passwordToSteam { get; private set; }

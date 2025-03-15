@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using FlippingSkins;
 using OpenQA.Selenium;
@@ -7,12 +8,10 @@ using OpenQA.Selenium.Support.UI;
 
 internal class Program
 {
-    public static ChromeOptions options = new ChromeOptions();
     private static async Task Main(string[] args)
     {
-        ConfigInformation configInformation = SettingConfig();
-
-        StartConfig();
+        ConfigInformation configInformation = Utils.SettingConfig();
+        Utils.StartConfig();
 
         do
         {
@@ -37,9 +36,9 @@ internal class Program
                         webDriver.Quit();
 
                         List<List<ScrapRust>> collectionsRust = new List<List<ScrapRust>>();
-                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / 10.0);
+                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / Utils.COUNTWEB);
                         
-                        for (int i = 0; i < 10; i++)
+                        for (int i = 0; i < Utils.COUNTWEB; i++)
                         {
                             var collection = Scrap.scrapRust.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collectionsRust.Add(collection);
@@ -49,53 +48,42 @@ internal class Program
                         await AsyncWebCreator(tasks, collectionsRust.Count, 1);
                         Scrap.counter = 0;
 
-                        foreach (var item in Scrap.scrapRust)
-                        {
-                            item.SetProcent();
-                        }
+                        List<ScrapRust> bestDealsRust = Scrap.scrapRust.
+                            OrderByDescending(x => x.ProcentOfPrice).
+                            Take(100).
+                            ToList();
 
-                        List<ScrapRust> bestDeals = Scrap.scrapRust.OrderByDescending(x => x.ProcentOfPrice).Take(100).ToList();
-                        ShowingDeals("Best deals Steam -> SkinsMoneky:", bestDeals.Cast<ScrapElement>().ToList());
+                        bestDealsRust.RemoveAll(x => x.PriceRustSteam == 0 || x.PriceRustSkinsMonkey == 0);
+                        ShowingDeals("Best deals Steam -> SkinsMonkey:", bestDealsRust.Cast<ScrapElement>().ToList());
                         break;
 
                     case '2':
-                        webDriver = LoginWebsites.CreatingWeb(configInformation, 0);
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver);
+                        Tuple<float, float> tuple = SetPriceForCSGO();
+
+                        webDriver = LoginWebsites.CreatingWeb(configInformation, 2);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, tuple);
                         webDriver.Quit();
 
                         List<List<ScrapCSGO>> collectionsCSGO = new List<List<ScrapCSGO>>();
-                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / 10.0);
+                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / Utils.COUNTWEB);
 
-                        for (int i = 0; i < 10; i++)
+                        for (int i = 0; i < Utils.COUNTWEB; i++)
                         {
                             var collection = Scrap.scrapCSGO.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
                             collectionsCSGO.Add(collection);
                         }
+
                         Scrap.scrapPriceFromCSGO = collectionsCSGO;
-
-
-                        for (int i = 0; i < collectionsCSGO.Count; i++)
-                        {
-                            Thread.Sleep(2500);
-                            tasks.Add(Task.Run(async () =>
-                            {
-                                IWebDriver driver = new ChromeDriver(options);
-                                driver.Manage().Window.Maximize();
-                                await Scrap.ScrapPricesFromSteamMarketCSGO(driver);
-                                driver.Quit();
-                            }));
-                        }
-                        await Task.WhenAll(tasks);
+                        await AsyncWebCreator(tasks, collectionsCSGO.Count, 2);
                         Scrap.counter = 0;
 
-                        /// POPRAWKA
-                        List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.OrderByDescending(x => x.Difference).Take(100).ToList();
-                        Console.WriteLine("Best deals SkinsMonkey -> Steam:");
-                        foreach (var item in bestDealsCsgo)
-                        {
-                            item.Description();
-                        }
-                        Console.ReadKey();
+                        List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.
+                            OrderByDescending(x => x.ProcentOfPrice).
+                            Take(100).
+                            ToList();
+
+                        bestDealsCsgo.RemoveAll(x => x.PriceCSGOSkinsMonkey == 0 || x.PriceCSGOSkinsSteam == 0);
+                        ShowingDeals("Best deals SkinsMonkey -> Steam:", bestDealsCsgo.Cast<ScrapElement>().ToList());
                         break;
                     case '3':
                         break;
@@ -106,7 +94,7 @@ internal class Program
             }
             catch (Exception ex)
             {
-                ExceptionMessage(ex);
+                Utils.ExceptionMessage(ex);
             }
 
             tasks.Clear();
@@ -114,43 +102,6 @@ internal class Program
             Console.Clear();
 
         } while (true);
-    }
-
-    /// <summary>
-    /// Special arguments to set chrome
-    /// </summary>
-    private static void StartConfig()
-    {
-        //options.AddArgument("--headless");
-        options.AddArgument("--disable-blink-features=AutomationControlled");
-        options.AddExcludedArgument("enable-automation");
-        options.AddAdditionalOption("useAutomationExtension", false);
-        options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36");
-        options.AddArgument("--no-sandbox");
-        options.AddArgument("--disable-dev-shm-usage");
-        options.AddArgument("--remote-allow-origins=*");
-        options.AddArgument("--ignore-certificate-errors");
-    }
-
-    /// <summary>
-    /// Setting config to login into steam and gmail
-    /// </summary>
-    /// <returns>ConfigInformation object</returns>
-    private static ConfigInformation SettingConfig() => new ConfigInformation("flipingSkins", "vR5QKwJ252H%kpu", "flippingskins@gmail.com", "FlippingSkins123");
-
-    /// <summary>
-    /// Exception message
-    /// </summary>
-    /// <param name="ex"></param>
-    private static void ExceptionMessage(Exception ex)
-    {
-        Console.Clear();
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("ERROR!!!");
-        Console.ResetColor();
-        Console.WriteLine(ex.ToString());
-        Console.WriteLine("Click enter to continue");
-        Console.ReadKey();
     }
 
     /// <summary>
@@ -166,7 +117,7 @@ internal class Program
             Thread.Sleep(2500);
             tasks.Add(Task.Run(async () =>
             {
-                IWebDriver driver = new ChromeDriver(options);
+                IWebDriver driver = new ChromeDriver(Utils.options);
                 driver.Manage().Window.Maximize();
                 if (mode == 1)
                 {
@@ -198,5 +149,50 @@ internal class Program
             item.Description();
         }
         Console.ReadKey();
+    }
+
+
+    /// <summary>
+    /// Setting price of items from CSGO (to many items to scrap)
+    /// </summary>
+    /// <returns></returns>
+    private static Tuple<float,float> SetPriceForCSGO()
+    {
+        float lowPrice = 0.0f;
+        float highPrice = 0.0f;
+
+        do
+        {
+            Console.Clear();
+            Console.Write("Set the lowest price: ");
+            if (float.TryParse(Console.ReadLine().Replace('.',','), out lowPrice)
+                && lowPrice <= 101f
+                && lowPrice >= 0.4f)
+            {
+                break;
+            }
+
+        } while (true);
+
+        do
+        {
+            Console.Clear();
+            Console.Write("Set the highest price: ");
+            if (float.TryParse(Console.ReadLine().Replace('.', ','), out highPrice)
+                && highPrice <= 100f
+                && highPrice >= 0.41f
+                && highPrice >= lowPrice)
+            {
+                break;
+            }
+
+        } while (true);
+
+        lowPrice = (float)Math.Round(lowPrice,2);
+        highPrice = (float)Math.Round(highPrice,2);
+
+        Console.Clear();
+
+        return new Tuple<float, float> ( lowPrice, highPrice );
     }
 }
