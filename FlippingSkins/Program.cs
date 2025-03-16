@@ -59,9 +59,11 @@ internal class Program
 
                     case '2':
                         Tuple<float, float> tuple = SetPriceForCSGO();
-
+                        List<Tuple<float, float>> listOfPrices = SetListOfTuples(tuple);
                         webDriver = LoginWebsites.CreatingWeb(configInformation, 2);
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, tuple);
+
+
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, listOfPrices);
                         webDriver.Quit();
 
                         List<List<ScrapCSGO>> collectionsCSGO = new List<List<ScrapCSGO>>();
@@ -194,5 +196,30 @@ internal class Program
         Console.Clear();
 
         return new Tuple<float, float> ( lowPrice, highPrice );
+    }
+
+    private static List<Tuple<float, float>> SetListOfTuples(Tuple<float,float> tuple)
+    {
+        List<Tuple<float,float>> list = new List<Tuple<float,float>>();
+        float startPoint = tuple.Item1;
+        float endPoint = tuple.Item2;
+        float checkPrice = tuple.Item1;
+        do
+        {
+            if(checkPrice + 1 >= endPoint)
+            {
+                list.Add(Tuple.Create(checkPrice,endPoint));
+                break;
+            }
+            else
+            {
+                float startCheck = checkPrice;
+                checkPrice += 1;
+                list.Add(Tuple.Create(startCheck,checkPrice));
+            }
+
+        } while (true);
+
+        return list;
     }
 }
