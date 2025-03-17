@@ -76,7 +76,7 @@ namespace FlippingSkins
             {
                 action.Click(sorting[1]).Build().Perform();
                 sorting[1].SendKeys(Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.ArrowRight + Keys.Backspace);
-                sorting[1].SendKeys(tuples[i].Item1.ToString());
+                sorting[1].SendKeys((tuples[i].Item1 - 0.05).ToString());
 
                 action.Click(sorting[2]).Build().Perform();
                 sorting[2].SendKeys(tuples[i].Item2.ToString() + Keys.Enter);
@@ -259,7 +259,6 @@ namespace FlippingSkins
                         break;
                     }
 
-                    /// poprawka
                 } while (true);
             }
 
