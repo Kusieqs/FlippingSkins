@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Globalization;
@@ -74,12 +75,8 @@ namespace FlippingSkins
 
             for (int i = 0; tuples.Count > i; i++)
             {
-                action.Click(sorting[1]).Build().Perform();
-                sorting[1].SendKeys(Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.ArrowRight + Keys.Backspace);
-                sorting[1].SendKeys((tuples[i].Item1 - 0.05).ToString());
-
-                action.Click(sorting[2]).Build().Perform();
-                sorting[2].SendKeys(tuples[i].Item2.ToString() + Keys.Enter);
+                SetSorting(action, sorting[1], tuples[i].Item1, 0.05f);
+                SetSorting(action, sorting[2], tuples[i].Item2);
 
                 Thread.Sleep(2000);
 
@@ -142,6 +139,8 @@ namespace FlippingSkins
 
 
                 } while (isToHighPrice);
+
+                Console.WriteLine(scrapCSGO.Count);
             }
 
         }
@@ -277,6 +276,13 @@ namespace FlippingSkins
             writeItem.SendKeys(Keys.Control + "a");
             writeItem.SendKeys(Keys.Delete);
             writeItem.SendKeys($"{name}");
+        }
+
+        private static void SetSorting(Actions action, IWebElement sorting, float tupleNumber, float errorNumber = 0)
+        {
+            action.Click(sorting).Build().Perform();
+            sorting.SendKeys(Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.ArrowRight + Keys.Backspace);
+            sorting.SendKeys((tupleNumber - errorNumber).ToString());
         }
     }
 }
