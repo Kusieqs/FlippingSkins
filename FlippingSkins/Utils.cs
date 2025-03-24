@@ -50,5 +50,79 @@ namespace FlippingSkins
             options.AddArgument("--ignore-certificate-errors");
         }
 
+        /// <summary>
+        /// Setting price of items from CSGO (to many items to scrap)
+        /// </summary>
+        /// <returns></returns>
+        public static Tuple<float, float> SetPriceForCSGO()
+        {
+            float lowPrice = 0.0f;
+            float highPrice = 0.0f;
+
+            do
+            {
+                Console.Clear();
+                Console.Write("Set the lowest price: ");
+                if (float.TryParse(Console.ReadLine().Replace('.', ','), out lowPrice)
+                    && lowPrice <= 101f
+                    && lowPrice >= 0.4f)
+                {
+                    break;
+                }
+
+            } while (true);
+
+            do
+            {
+                Console.Clear();
+                Console.Write("Set the highest price: ");
+                if (float.TryParse(Console.ReadLine().Replace('.', ','), out highPrice)
+                    && highPrice <= 100f
+                    && highPrice >= 0.41f
+                    && highPrice >= lowPrice)
+                {
+                    break;
+                }
+
+            } while (true);
+
+            lowPrice = (float)Math.Round(lowPrice, 2);
+            highPrice = (float)Math.Round(highPrice, 2);
+
+            Console.Clear();
+
+            return new Tuple<float, float>(lowPrice, highPrice);
+        }
+
+        /// <summary>
+        /// List of tuples to define prices 
+        /// </summary>
+        /// <param name="tuple"></param>
+        /// <returns></returns>
+        public static List<Tuple<float, float>> SetListOfTuples(Tuple<float, float> tuple)
+        {
+            List<Tuple<float, float>> list = new List<Tuple<float, float>>();
+            float startPoint = tuple.Item1;
+            float endPoint = tuple.Item2;
+            float checkPrice = tuple.Item1;
+            do
+            {
+                if (checkPrice + 0.5f >= endPoint)
+                {
+                    list.Add(Tuple.Create(checkPrice, endPoint));
+                    break;
+                }
+                else
+                {
+                    float startCheck = checkPrice;
+                    checkPrice += 0.5f;
+                    list.Add(Tuple.Create(startCheck, checkPrice));
+                }
+
+            } while (true);
+
+            return list;
+        }
+
     }
 }

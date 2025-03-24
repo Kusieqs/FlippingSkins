@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Globalization;
@@ -65,82 +66,82 @@ namespace FlippingSkins
             } while (isToHighPrice);
             
         }
-        public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver, Tuple<float,float> tuple)
+        public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver, List<Tuple<float,float>> tuples)
         {
             bool isToHighPrice = true;
-
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
             Actions action = new Actions(driver);
 
-            action.Click(sorting[1]).Build().Perform();
-            sorting[1].SendKeys(Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.ArrowRight + Keys.Backspace);
-            sorting[1].SendKeys(tuple.Item1.ToString());
-
-            action.Click(sorting[2]).Build().Perform();
-            sorting[2].SendKeys(tuple.Item2.ToString() + Keys.Enter);
-
-            Thread.Sleep(2000);
-
-            do
+            for (int i = 0; tuples.Count > i; i++)
             {
+                SetSorting(action, sorting[1], tuples[i].Item1, 0.05f);
+                SetSorting(action, sorting[2], tuples[i].Item2);
+
                 Thread.Sleep(2000);
-                var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
-                var element = wait.Until(driver => driver.FindElements(By.CssSelector("img.item-image")));
-                IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 
-                for (int i = 0; i < pricesV1toScrap.Count; i++)
-                {
-                    string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[i]);
-                    price = price.Remove(0, 1).Trim();
-                    string altText = element[i].GetAttribute("alt"); 
-
-                    string name = altText.Trim();
-
-                    ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
-
-                    if (!scrapCSGO.Any(x => x.Name == name))
-                    {
-                        scrapCSGO.Add(scrapElement);
-                    }
-
-                    if (scrapElement.PriceCSGOSkinsMonkey < 0.4)
-                    {
-                        isToHighPrice = false;
-                        break;
-                    }
-
-                }
-
-                int timer = 0;
                 do
                 {
-                    try
+                    Thread.Sleep(2000);
+                    var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
+                    var element = wait.Until(driver => driver.FindElements(By.CssSelector("img.item-image")));
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+
+                    for (int j = 0; j < pricesV1toScrap.Count; j++)
                     {
-                        var scrollbar = pricesV1toScrap[19];
-                        action.MoveToElement(scrollbar).Click().Build().Perform();
-                        break;
-                    }
-                    catch
-                    {
-                        timer++;
-                        Thread.Sleep(1000);
-                        if(timer == 15)
+                        string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[j]);
+                        price = price.Remove(0, 1).Trim();
+                        string altText = element[j].GetAttribute("alt");
+
+                        string name = altText.Trim();
+
+                        ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
+
+                        if (!scrapCSGO.Any(x => x.Name == name))
                         {
-                            return;
+                            scrapCSGO.Add(scrapElement);
                         }
+
+                        if (scrapElement.PriceCSGOSkinsMonkey < 0.4 || scrapElement.PriceCSGOSkinsMonkey < tuples[i].Item1)
+                        {
+                            isToHighPrice = false;
+                            break;
+                        }
+
                     }
-                } while (true);
+
+                    int timer = 0;
+                    while(isToHighPrice)
+                    {
+                        try
+                        {
+                            var scrollbar = pricesV1toScrap[19];
+                            action.MoveToElement(scrollbar).Click().Build().Perform();
+                            break;
+                        }
+                        catch
+                        {
+                            timer++;
+                            Thread.Sleep(1000);
+                            if (timer == 15)
+                            {
+                                return;
+                            }
+                        }
+                    };
 
 
-                for (int i = 0; i < 4; i++)
-                {
-                    action.SendKeys(Keys.PageDown).Build().Perform();
-                    Thread.Sleep(250);
-                }
+                    for (int j = 0; j < 4; j++)
+                    {
+                        action.SendKeys(Keys.PageDown).Build().Perform();
+                        Thread.Sleep(250);
+                    }
 
 
-            } while(isToHighPrice);
+                } while (isToHighPrice);
+
+                Console.WriteLine(scrapCSGO.Count);
+            }
 
         }
         public static async Task ScrapPricesFromSteamMarketRust(IWebDriver driver)
@@ -257,7 +258,6 @@ namespace FlippingSkins
                         break;
                     }
 
-                    /// poprawka
                 } while (true);
             }
 
@@ -276,6 +276,13 @@ namespace FlippingSkins
             writeItem.SendKeys(Keys.Control + "a");
             writeItem.SendKeys(Keys.Delete);
             writeItem.SendKeys($"{name}");
+        }
+
+        private static void SetSorting(Actions action, IWebElement sorting, float tupleNumber, float errorNumber = 0)
+        {
+            action.Click(sorting).Build().Perform();
+            sorting.SendKeys(Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.ArrowRight + Keys.Backspace);
+            sorting.SendKeys((tupleNumber - errorNumber).ToString());
         }
     }
 }

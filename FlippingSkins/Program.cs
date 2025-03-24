@@ -58,10 +58,12 @@ internal class Program
                         break;
 
                     case '2':
-                        Tuple<float, float> tuple = SetPriceForCSGO();
-
+                        Tuple<float, float> tuple = Utils.SetPriceForCSGO();
+                        List<Tuple<float, float>> listOfPrices = Utils.SetListOfTuples(tuple);
                         webDriver = LoginWebsites.CreatingWeb(configInformation, 2);
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, tuple);
+
+
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, listOfPrices);
                         webDriver.Quit();
 
                         List<List<ScrapCSGO>> collectionsCSGO = new List<List<ScrapCSGO>>();
@@ -151,48 +153,4 @@ internal class Program
         Console.ReadKey();
     }
 
-
-    /// <summary>
-    /// Setting price of items from CSGO (to many items to scrap)
-    /// </summary>
-    /// <returns></returns>
-    private static Tuple<float,float> SetPriceForCSGO()
-    {
-        float lowPrice = 0.0f;
-        float highPrice = 0.0f;
-
-        do
-        {
-            Console.Clear();
-            Console.Write("Set the lowest price: ");
-            if (float.TryParse(Console.ReadLine().Replace('.',','), out lowPrice)
-                && lowPrice <= 101f
-                && lowPrice >= 0.4f)
-            {
-                break;
-            }
-
-        } while (true);
-
-        do
-        {
-            Console.Clear();
-            Console.Write("Set the highest price: ");
-            if (float.TryParse(Console.ReadLine().Replace('.', ','), out highPrice)
-                && highPrice <= 100f
-                && highPrice >= 0.41f
-                && highPrice >= lowPrice)
-            {
-                break;
-            }
-
-        } while (true);
-
-        lowPrice = (float)Math.Round(lowPrice,2);
-        highPrice = (float)Math.Round(highPrice,2);
-
-        Console.Clear();
-
-        return new Tuple<float, float> ( lowPrice, highPrice );
-    }
 }
