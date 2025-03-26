@@ -77,24 +77,27 @@ namespace FlippingSkins
                 SetSorting(action, sorting[1], tuples[i].Item1, 0.1f);
                 SetSorting(action, sorting[2], tuples[i].Item2);
                 bool isToHighPrice = true;
-                Thread.Sleep(10000);
-
+                Thread.Sleep(5000);
+                Console.WriteLine("\n\nNEW TUPLE\n\n");
+                bool firstTime = true;
                 do
                 {
                     Thread.Sleep(2000);
-                    var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
+                    var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-card__bottom']//div[@class='item-card__info']//div[@class='item-price item-card__price']")));
                     var element = wait.Until(driver => driver.FindElements(By.CssSelector("img.item-image")));
                     IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 
-                    for (int j = 0; j < pricesV1toScrap.Count; j++)
+                    int loop = firstTime ? 6 : pricesV1toScrap.Count;
+                    firstTime = false;
+
+                    for (int j = 0; j < loop; j++)
                     {
                         string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[j]);
                         price = price.Remove(0, 1).Trim();
                         string altText = element[j].GetAttribute("alt");
-
                         string name = altText.Trim();
-
                         ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
+                        scrapElement.Description();
 
                         if (!scrapCSGO.Any(x => x.Name == name))
                         {
