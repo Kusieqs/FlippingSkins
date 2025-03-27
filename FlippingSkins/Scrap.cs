@@ -70,8 +70,10 @@ namespace FlippingSkins
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
+
             Actions action = new Actions(driver);
 
+            SetQuality(action, wait, driver);
             for (int i = 0; i < tuples.Count; i++)
             {
                 SetSorting(action, sorting[1], tuples[i].Item1, 0.1f);
@@ -87,7 +89,7 @@ namespace FlippingSkins
                     var element = wait.Until(driver => driver.FindElements(By.CssSelector("img.item-image")));
                     IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 
-                    int loop = firstTime ? 6 : pricesV1toScrap.Count;
+                    int loop = firstTime ? 4 : pricesV1toScrap.Count;
                     firstTime = false;
 
                     for (int j = 0; j < loop; j++)
@@ -290,6 +292,19 @@ namespace FlippingSkins
             action.Click(sorting).Build().Perform();
             sorting.SendKeys(Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.ArrowRight + Keys.Backspace);
             sorting.SendKeys((tupleNumber - errorNumber).ToString());
+        }
+        private static void SetQuality(Actions action, WebDriverWait wait, IWebDriver driver)
+        {
+            var sorting = wait.Until(driver => driver.FindElement(By.XPath("//div[@class='trade-collapse trade-filter-exterior']")));
+            action.Click(sorting).Build().Perform();
+            Thread.Sleep(2000);
+            IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+            var checkbox = wait.Until(driver => driver.FindElements(By.XPath("//span[@class='trade-filter-option-generic__label']")));
+            for(int i = 2; i < 7; i++)
+            {
+                js.ExecuteScript("arguments[0].click();", checkbox[i]);
+            }
+
         }
     }
 }
