@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using static System.Collections.Specialized.BitVector32;
 
 namespace FlippingSkins
 {
@@ -25,7 +26,7 @@ namespace FlippingSkins
 
         public static void ScrapPricesAndNamesFromSkinsMonkey_Rust(IWebDriver driver)
         {
-            Actions actions = new Actions(driver);
+            Actions action = new Actions(driver);
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             bool isToHighPrice = true;
 
@@ -56,13 +57,15 @@ namespace FlippingSkins
                 }
 
                 var scrollbar = namesToScrap[19];
-                actions.MoveToElement(scrollbar).Click().Build().Perform();
+                action.MoveToElement(scrollbar).Click().Build().Perform();
 
                 for(int i = 0; i < 3; i ++)
                 {
-                    actions.SendKeys(Keys.PageDown).Build().Perform();
+                    action.SendKeys(Keys.PageDown).Build().Perform();
                     Thread.Sleep(250);
                 }
+
+                RemoveElement(action, wait, driver);
             } while (isToHighPrice);
             
         }
@@ -145,6 +148,8 @@ namespace FlippingSkins
                         action.SendKeys(Keys.PageDown).Build().Perform();
                         Thread.Sleep(250);
                     }
+
+                    RemoveElement(action, wait, driver);
 
 
                 } while (isToHighPrice);
@@ -286,7 +291,6 @@ namespace FlippingSkins
             writeItem.SendKeys(Keys.Delete);
             writeItem.SendKeys($"{name}");
         }
-
         private static void SetSorting(Actions action, IWebElement sorting, float tupleNumber, float errorNumber = 0)
         {
             action.Click(sorting).Build().Perform();
@@ -305,6 +309,14 @@ namespace FlippingSkins
                 js.ExecuteScript("arguments[0].click();", checkbox[i]);
             }
 
+        }
+        private static void RemoveElement(Actions action, WebDriverWait wait, IWebDriver driver)
+        {
+            var itemToRemoves = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='cart-static-item__remove']")));
+            if (itemToRemoves.Count > 0)
+            {
+                action.Click(itemToRemoves[0]).Build().Perform();
+            }
         }
     }
 }
