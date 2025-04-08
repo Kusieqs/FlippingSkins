@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using static System.Collections.Specialized.BitVector32;
 
 namespace FlippingSkins
 {
@@ -25,7 +26,7 @@ namespace FlippingSkins
 
         public static void ScrapPricesAndNamesFromSkinsMonkey_Rust(IWebDriver driver)
         {
-            Actions actions = new Actions(driver);
+            Actions action = new Actions(driver);
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             bool isToHighPrice = true;
 
@@ -56,46 +57,52 @@ namespace FlippingSkins
                 }
 
                 var scrollbar = namesToScrap[19];
-                actions.MoveToElement(scrollbar).Click().Build().Perform();
+                action.MoveToElement(scrollbar).Click().Build().Perform();
 
                 for(int i = 0; i < 3; i ++)
                 {
-                    actions.SendKeys(Keys.PageDown).Build().Perform();
+                    action.SendKeys(Keys.PageDown).Build().Perform();
                     Thread.Sleep(250);
                 }
+
+                RemoveElement(action, wait, driver);
             } while (isToHighPrice);
             
         }
         public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver, List<Tuple<float,float>> tuples)
         {
-            bool isToHighPrice = true;
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
+
             Actions action = new Actions(driver);
 
-            for (int i = 0; tuples.Count > i; i++)
+            SetQuality(action, wait, driver);
+            for (int i = 0; i < tuples.Count; i++)
             {
-                SetSorting(action, sorting[1], tuples[i].Item1, 0.05f);
+                SetSorting(action, sorting[1], tuples[i].Item1, 0.1f);
                 SetSorting(action, sorting[2], tuples[i].Item2);
-
-                Thread.Sleep(2000);
-
+                bool isToHighPrice = true;
+                Thread.Sleep(5000);
+                Console.WriteLine("\n\nNEW TUPLE\n\n");
+                bool firstTime = true;
                 do
                 {
                     Thread.Sleep(2000);
-                    var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-price item-card__price']")));
+                    var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-card__bottom']//div[@class='item-card__info']//div[@class='item-price item-card__price']")));
                     var element = wait.Until(driver => driver.FindElements(By.CssSelector("img.item-image")));
                     IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 
-                    for (int j = 0; j < pricesV1toScrap.Count; j++)
+                    int loop = firstTime ? 4 : pricesV1toScrap.Count;
+                    firstTime = false;
+
+                    for (int j = 0; j < loop; j++)
                     {
                         string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[j]);
                         price = price.Remove(0, 1).Trim();
                         string altText = element[j].GetAttribute("alt");
-
                         string name = altText.Trim();
-
                         ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
+                        scrapElement.Description();
 
                         if (!scrapCSGO.Any(x => x.Name == name))
                         {
@@ -104,6 +111,11 @@ namespace FlippingSkins
 
                         if (scrapElement.PriceCSGOSkinsMonkey < 0.4 || scrapElement.PriceCSGOSkinsMonkey < tuples[i].Item1)
                         {
+                            Console.WriteLine("TEST");
+                            Console.WriteLine(scrapElement.PriceCSGOSkinsMonkey);
+                            Console.WriteLine(tuples[i].Item1);
+                            Console.WriteLine(scrapElement.PriceCSGOSkinsMonkey < tuples[i].Item1);
+                            Console.WriteLine(scrapElement.PriceCSGOSkinsMonkey < 0.4);
                             isToHighPrice = false;
                             break;
                         }
@@ -136,6 +148,8 @@ namespace FlippingSkins
                         action.SendKeys(Keys.PageDown).Build().Perform();
                         Thread.Sleep(250);
                     }
+
+                    RemoveElement(action, wait, driver);
 
 
                 } while (isToHighPrice);
@@ -277,12 +291,32 @@ namespace FlippingSkins
             writeItem.SendKeys(Keys.Delete);
             writeItem.SendKeys($"{name}");
         }
-
         private static void SetSorting(Actions action, IWebElement sorting, float tupleNumber, float errorNumber = 0)
         {
             action.Click(sorting).Build().Perform();
             sorting.SendKeys(Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.ArrowRight + Keys.Backspace);
             sorting.SendKeys((tupleNumber - errorNumber).ToString());
+        }
+        private static void SetQuality(Actions action, WebDriverWait wait, IWebDriver driver)
+        {
+            var sorting = wait.Until(driver => driver.FindElement(By.XPath("//div[@class='trade-collapse trade-filter-exterior']")));
+            action.Click(sorting).Build().Perform();
+            Thread.Sleep(2000);
+            IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+            var checkbox = wait.Until(driver => driver.FindElements(By.XPath("//span[@class='trade-filter-option-generic__label']")));
+            for(int i = 2; i < 7; i++)
+            {
+                js.ExecuteScript("arguments[0].click();", checkbox[i]);
+            }
+
+        }
+        private static void RemoveElement(Actions action, WebDriverWait wait, IWebDriver driver)
+        {
+            var itemToRemoves = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='cart-static-item__remove']")));
+            if (itemToRemoves.Count > 0)
+            {
+                action.Click(itemToRemoves[0]).Build().Perform();
+            }
         }
     }
 }
