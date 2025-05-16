@@ -77,7 +77,7 @@ namespace FlippingSkins
                 Actions actions = new Actions(driver);
                 actions.MoveToElement(loginButton).Click().Perform();
 
-                await GmailGuard();
+                Task.WaitAll(GmailGuard());
                 System.Threading.Thread.Sleep(1000);
                 for(int i = 0; i < 5; i++)
                 {
@@ -135,7 +135,6 @@ namespace FlippingSkins
             request.IncludeSpamTrash = false;
             var response = await request.ExecuteAsync();
 
-
             if (response.Messages != null && response.Messages.Count > 0)
             {
                 var msg = response.Messages.First();
@@ -144,15 +143,15 @@ namespace FlippingSkins
                 var fromHeader = headers.FirstOrDefault(h => h.Name == "From");
                 string messageBody = GetPlainTextFromMessage(fullMessage.Payload);
 
-                Console.WriteLine($"Od: {fromHeader?.Value}");
-                Console.WriteLine($"Treść wiadomości:\n{messageBody}");
+
+                int indeks = messageBody.IndexOf("Kod logowania");
+                string code = messageBody.Substring(indeks+15, 5);
+                configInformation.keyGuard = code;
             }
             else
             {
                 Console.WriteLine("Brak wiadomości.");
             }
-
-            configInformation.keyGuard = "s";
             return;
         }
 
