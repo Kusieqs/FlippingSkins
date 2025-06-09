@@ -8,6 +8,11 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using OpenQA.Selenium.Interactions;
 using System.Runtime.CompilerServices;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Gmail.v1;
+using Google.Apis.Util.Store;
+using Google.Apis.Services;
+using Google.Apis.Gmail.v1.Data;
 
 namespace FlippingSkins
 {
@@ -34,14 +39,14 @@ namespace FlippingSkins
             Actions actions = new Actions(driver);
             actions.MoveToElement(loginButton).Click().Perform();
 
-            Thread.Sleep(2000);
+            System.Threading.Thread.Sleep(2000);
             LoginToSteam(driver, wait);
 
-            Thread.Sleep(2000);
+            System.Threading.Thread.Sleep(2000);
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='form-select__body']")));
             actions.MoveToElement(sorting[3]).Click().Perform();
 
-            Thread.Sleep(500);
+            System.Threading.Thread.Sleep(500);
 
 
             if(mode == 1)
@@ -54,14 +59,14 @@ namespace FlippingSkins
                 var elements = wait.Until(driver => driver.FindElements(By.XPath("//img[@alt='CS2']")));
                 actions.MoveToElement(elements[1]).Click().Perform();
             }
-            Thread.Sleep(1500);
+            System.Threading.Thread.Sleep(1500);
         }
 
-        private static void LoginToSteam(IWebDriver driver, WebDriverWait wait)
+        private static async void LoginToSteam(IWebDriver driver, WebDriverWait wait)
         {
             try
             {
-                Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(1000);
                 var login = wait.Until(driver => driver.FindElement(By.XPath("//input[@type='text'][@class='_2GBWeup5cttgbTw8FM3tfx']")));
                 login.SendKeys(configInformation.loginToSteam);
 
@@ -72,16 +77,15 @@ namespace FlippingSkins
                 Actions actions = new Actions(driver);
                 actions.MoveToElement(loginButton).Click().Perform();
 
-                string guard = GmailGuard();
-                configInformation.keyGuard = guard;
-
+                Task.WaitAll(GmailGuard());
+                System.Threading.Thread.Sleep(1000);
                 for(int i = 0; i < 5; i++)
                 {
                     var charInput = wait.Until(driver => driver.FindElement(By.CssSelector("input._3xcXqLVteTNHmk-gh9W65d[value='']")));
-                    charInput.SendKeys(guard[i].ToString());
+                    charInput.SendKeys(configInformation.keyGuard[i].ToString());
                 }
 
-                Thread.Sleep(2000);
+                System.Threading.Thread.Sleep(2000);
                 var loginIntoSkinsMonkey = wait.Until(driver => driver.FindElement(By.XPath("//input[@class='btn_green_white_innerfade']")));
                 actions.MoveToElement(loginIntoSkinsMonkey).Click().Perform();
             }
@@ -96,48 +100,86 @@ namespace FlippingSkins
 
         }
 
-        private static string GmailGuard()
+        private static async Task GmailGuard()
         {
-            IWebDriver gmail = new ChromeDriver(Utils.options);
-            gmail.Manage().Window.Maximize();
-            gmail.Navigate().GoToUrl("https://workspace.google.com/intl/pl/gmail/");
-            WebDriverWait wait = new WebDriverWait(gmail, TimeSpan.FromSeconds(5));
+            string googleClientId = "71031490539-phrkft1pgbmffljk7vsgr1mcke5o2hl9.apps.googleusercontent.com";
+            string googleClientSecret = "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";
 
-            var enterLogin = wait.Until(gmail => gmail.FindElement(By.XPath("//a[@class='button button--medium header__aside__button button--desktop button--tablet button--mobile']")));
-            Actions clickButton = new Actions(gmail);
-            clickButton.MoveToElement(enterLogin).Click().Perform();
-
-            var email = wait.Until(gmail => gmail.FindElement(By.XPath("//input[@class='whsOnd zHQkBf']")));
-            email.SendKeys(configInformation.loginToGmail);
-
-            var enterEmail = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
-            clickButton.MoveToElement(enterEmail).Click().Perform();
-
-            Thread.Sleep(5000);
-            var password = wait.Until(gmail => gmail.FindElement(By.XPath("//input[@class='whsOnd zHQkBf']")));
-            password.SendKeys(configInformation.passwordToGmail);
-
-            var enterPassword = wait.Until(gmail => gmail.FindElement(By.XPath("//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 BqKGqe Jskylb TrZEUc lw1w4b']")));
-            clickButton.MoveToElement(enterPassword).Click().Perform();
-
-
-            Thread.Sleep(4500);
-            var enterMessage = wait.Until(gmail => gmail.FindElement(By.XPath("//tr[@class='zA zE']")));
-            clickButton.MoveToElement(enterMessage).Click().Perform();
-
-            Thread.Sleep(1000);
-            var elements = gmail.FindElements(By.XPath("//img[@class='ajT']"));
-            if(elements.Count > 0)
+            var secrets = new ClientSecrets
             {
-                clickButton.MoveToElement(elements[0]).Click().Perform();
+                ClientId = googleClientId,
+                ClientSecret = googleClientSecret
+            };
+
+            var scopes = new[] { GmailService.Scope.GmailReadonly };
+
+            var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                secrets,
+                scopes,
+                "user",
+                CancellationToken.None,
+                new FileDataStore("token_store", true)
+                );
+
+            var service = new GmailService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "FlippingSkins"
+            });
+
+            var request = service.Users.Messages.List("me");
+            request.MaxResults = 1;
+
+            request.LabelIds = "INBOX";
+            request.Q = "is:unread";
+            request.IncludeSpamTrash = false;
+            var response = await request.ExecuteAsync();
+
+            if (response.Messages != null && response.Messages.Count > 0)
+            {
+                var msg = response.Messages.First();
+                var fullMessage = await service.Users.Messages.Get("me", msg.Id).ExecuteAsync();
+                var headers = fullMessage.Payload.Headers;
+                var fromHeader = headers.FirstOrDefault(h => h.Name == "From");
+                string messageBody = GetPlainTextFromMessage(fullMessage.Payload);
+
+
+                int indeks = messageBody.IndexOf("Kod logowania");
+                string code = messageBody.Substring(indeks+15, 5);
+                configInformation.keyGuard = code;
+            }
+            else
+            {
+                Console.WriteLine("Brak wiadomości.");
+            }
+            return;
+        }
+
+        public static string GetPlainTextFromMessage(MessagePart part)
+        {
+            if (part == null)
+                return "";
+
+            if (part.MimeType == "text/plain" && part.Body?.Data != null)
+            {
+                // Gmail koduje treść w base64url (nie standard base64!)
+                string base64 = part.Body.Data.Replace("-", "+").Replace("_", "/");
+                byte[] data = Convert.FromBase64String(base64);
+                return Encoding.UTF8.GetString(data);
             }
 
-            Thread.Sleep(500);
-            var guard = wait.Until(gmail => gmail.FindElement(By.CssSelector("td[style*='font-size:48px'][style*='font-family:Arial']")));
-            string keyGuard = guard.Text;
-            gmail.Quit();
-            
-            return keyGuard;
+            // Jeśli to multipart, przeszukaj podczęści
+            if (part.Parts != null)
+            {
+                foreach (var subPart in part.Parts)
+                {
+                    var text = GetPlainTextFromMessage(subPart);
+                    if (!string.IsNullOrEmpty(text))
+                        return text;
+                }
+            }
+
+            return "";
         }
     }
 }
