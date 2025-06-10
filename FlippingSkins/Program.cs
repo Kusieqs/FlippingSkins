@@ -66,18 +66,7 @@ internal class Program
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, listOfPrices);
                         webDriver.Quit();
 
-                        List<List<ScrapCSGO>> collectionsCSGO = new List<List<ScrapCSGO>>();
-                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / Utils.COUNTWEB);
 
-                        for (int i = 0; i < Utils.COUNTWEB; i++)
-                        {
-                            var collection = Scrap.scrapCSGO.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
-                            collectionsCSGO.Add(collection);
-                        }
-
-                        Scrap.scrapPriceFromCSGO = collectionsCSGO;
-                        await AsyncWebCreator(tasks, collectionsCSGO.Count, 2);
-                        Scrap.counter = 0;
 
                         List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.
                             OrderByDescending(x => x.ProcentOfPrice).
