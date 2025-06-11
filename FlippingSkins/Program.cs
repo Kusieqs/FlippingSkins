@@ -35,18 +35,12 @@ internal class Program
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey_Rust(webDriver);
                         webDriver.Quit();
 
-                        List<List<ScrapRust>> collectionsRust = new List<List<ScrapRust>>();
-                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / Utils.COUNTWEB);
-                        
-                        for (int i = 0; i < Utils.COUNTWEB; i++)
+                        for(int i = 0; i < Scrap.scrapRust.Count; i ++)
                         {
-                            var collection = Scrap.scrapRust.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
-                            collectionsRust.Add(collection);
+                            Scrap.scrapRust[i].PriceRustSteam = await SkinsApi.GetPriceAsync(Scrap.scrapRust[i].Name, 252490);
+                            Console.WriteLine(Scrap.scrapRust[i].PriceRustSteam);
+                            Scrap.scrapRust[i].SetProcent();
                         }
-
-                        Scrap.scrapPriceFromRust = collectionsRust;
-                        await AsyncWebCreator(tasks, collectionsRust.Count, 1);
-                        Scrap.counter = 0;
 
                         List<ScrapRust> bestDealsRust = Scrap.scrapRust.
                             OrderByDescending(x => x.ProcentOfPrice).

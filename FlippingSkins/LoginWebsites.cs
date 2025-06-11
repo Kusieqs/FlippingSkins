@@ -78,14 +78,15 @@ namespace FlippingSkins
                 Actions actions = new Actions(driver);
                 actions.MoveToElement(loginButton).Click().Perform();
 
-                System.Threading.Thread.Sleep(2000);
+                System.Threading.Thread.Sleep(3000);
                 Task.WaitAll(GmailGuard());
                 for(int i = 0; i < 5; i++)
                 {
                     var charInput = wait.Until(driver => driver.FindElement(By.CssSelector("input._3xcXqLVteTNHmk-gh9W65d[value='']")));
                     charInput.SendKeys(configInformation.keyGuard[i].ToString());
                 }
-                Console.WriteLine(configInformation.keyGuard);
+
+                System.Threading.Thread.Sleep(2000);
                 var loginIntoSkinsMonkey = wait.Until(driver => driver.FindElement(By.XPath("//input[@class='btn_green_white_innerfade']")));
                 actions.MoveToElement(loginIntoSkinsMonkey).Click().Perform();
             }
@@ -142,11 +143,7 @@ namespace FlippingSkins
                 var headers = fullMessage.Payload.Headers;
                 var fromHeader = headers.FirstOrDefault(h => h.Name == "From");
                 string messageBody = GetPlainTextFromMessage(fullMessage.Payload);
-                Console.Clear();
-                Console.WriteLine("TEST");
-                Console.WriteLine(messageBody);
                 configInformation.keyGuard = GetCode(messageBody);
-                Console.ReadKey();
             }
             else
             {
@@ -182,19 +179,13 @@ namespace FlippingSkins
 
         private static string GetCode(string message)
         {
-            Match match = Regex.Match(message, @"Kod logowania\s+([A-Z]{5})");
+            Match match = Regex.Match(message, @"([0-9A-Z]{5})");
             string kodLogowania = "";
 
             if (match.Success)
             {
                 kodLogowania = match.Groups[1].Value;
-                Console.WriteLine("Kod logowania: " + kodLogowania);
             }
-            else
-            {
-                Console.WriteLine("Nie znaleziono kodu logowania.");
-            }
-            Console.ReadKey();
             return kodLogowania;
         }
     }

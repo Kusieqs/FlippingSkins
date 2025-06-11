@@ -9,19 +9,22 @@ namespace FlippingSkins
 {
     public static class SkinsApi
     {
-        const int appid = 730;
-        const int currency = 6;
-        public static async Task<float> GetPriceAsync(string nameOfItem)
+        const int CURRNECY = 6;
+        public static async Task<float> GetPriceAsync(string nameOfItem, int appid)
         {
             string url = $"https://steamcommunity.com/market/priceoverview/?"
-                + $"appid={appid}&market_hash_name={Uri.EscapeDataString(nameOfItem)}&currency={currency}";
+                + $"appid={appid}&market_hash_name={Uri.EscapeDataString(nameOfItem)}&currency={CURRNECY}";
+
+            Console.WriteLine(url);
 
             using (var client = new HttpClient())
             {
                 try
                 {
                     var json = await client.GetStringAsync(url);
+                    Console.WriteLine(json);
                     JsonCSGOPrices? jsonCSGOPrices = JsonConvert.DeserializeObject<JsonCSGOPrices>(json);
+                    Console.ReadKey();
                     if (jsonCSGOPrices != null)
                     {
                         float? price = jsonCSGOPrices.lowest_price;
@@ -31,8 +34,10 @@ namespace FlippingSkins
                         }
                     }
                 }
-                catch
+                catch (HttpRequestException httpEx)
                 {
+                    Console.WriteLine($"HttpRequestException: {httpEx.Message}");
+                    Console.ReadKey();
                     return 0;
                 }
             }
