@@ -49,7 +49,7 @@ namespace FlippingSkins
                         scrapRust.Add(scrapElement);
                     }
 
-                    if (scrapElement.PriceRustSkinsMonkey < 1.5)
+                    if (scrapElement.PriceRustSkinsMonkey < 4)
                     {
                         isToHighPrice = false;
                         break;
