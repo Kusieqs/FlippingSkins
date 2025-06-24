@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
-using static System.Collections.Specialized.BitVector32;
 
 namespace FlippingSkins
 {
@@ -71,10 +70,10 @@ namespace FlippingSkins
         }
         public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver, List<Tuple<float,float>> tuples)
         {
+            Actions action = new Actions(driver);
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
-
-            Actions action = new Actions(driver);
+;
 
             SetQuality(action, wait, driver);
             for (int i = 0; i < tuples.Count; i++)
@@ -83,7 +82,6 @@ namespace FlippingSkins
                 SetSorting(action, sorting[2], tuples[i].Item2);
                 bool isToHighPrice = true;
                 Thread.Sleep(5000);
-                Console.WriteLine("\n\nNEW TUPLE\n\n");
                 bool firstTime = true;
                 do
                 {
@@ -102,7 +100,6 @@ namespace FlippingSkins
                         string altText = element[j].GetAttribute("alt");
                         string name = altText.Trim();
                         ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
-                        scrapElement.Description();
 
                         if (!scrapCSGO.Any(x => x.Name == name))
                         {
@@ -111,7 +108,6 @@ namespace FlippingSkins
 
                         if (scrapElement.PriceCSGOSkinsMonkey < 0.4 || scrapElement.PriceCSGOSkinsMonkey < tuples[i].Item1)
                         {
-                            Console.WriteLine("TEST");
                             Console.WriteLine(scrapElement.PriceCSGOSkinsMonkey);
                             Console.WriteLine(tuples[i].Item1);
                             Console.WriteLine(scrapElement.PriceCSGOSkinsMonkey < tuples[i].Item1);
@@ -276,14 +272,6 @@ namespace FlippingSkins
             }
 
         }
-
-
-        /// <summary>
-        /// Inputing text into textbox
-        /// </summary>
-        /// <param name="driver">IWebDriver object</param>
-        /// <param name="wait">WebDriverWait object</param>
-        /// <param name="name">Name of item</param>
         private static void EnterTextIntoSearch(IWebDriver driver, WebDriverWait wait, string name, string xpath)
         {
             var writeItem = wait.Until(driver => driver.FindElement(By.XPath(xpath)));

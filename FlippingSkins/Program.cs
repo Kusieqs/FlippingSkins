@@ -38,7 +38,6 @@ internal class Program
                         for(int i = 0; i < Scrap.scrapRust.Count; i ++)
                         {
                             Scrap.scrapRust[i].PriceRustSteam = await SkinsApi.GetPriceAsync(Scrap.scrapRust[i].Name, 252490);
-                            Console.WriteLine(Scrap.scrapRust[i].PriceRustSteam);
                             Scrap.scrapRust[i].SetProcent();
                         }
 
@@ -55,11 +54,18 @@ internal class Program
                         Tuple<float, float> tuple = Utils.SetPriceForCSGO();
                         List<Tuple<float, float>> listOfPrices = Utils.SetListOfTuples(tuple);
                         webDriver = LoginWebsites.CreatingWeb(configInformation, 2);
-
-
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, listOfPrices);
                         webDriver.Quit();
 
+                        Console.WriteLine(Scrap.scrapCSGO.Count);
+                        Console.ReadKey();
+
+                        for(int i = 0; i < Scrap.scrapCSGO.Count; i++)
+                        {
+                            Scrap.scrapCSGO[i].PriceCSGOSkinsSteam = await SkinsApi.GetPriceAsync(Scrap.scrapCSGO[i].Name, 730);
+                            Console.WriteLine("TEST");
+                            Scrap.scrapCSGO[i].SetProcent();
+                        }
 
 
                         List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.

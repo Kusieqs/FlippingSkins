@@ -24,7 +24,13 @@ namespace FlippingSkins
                     JsonCSGOPrices? jsonCSGOPrices = JsonConvert.DeserializeObject<JsonCSGOPrices>(json);
                     if (jsonCSGOPrices != null)
                     {
-                        float? price = float.Parse(jsonCSGOPrices.lowest_price.ToString().Replace("$",""), CultureInfo.InvariantCulture);
+                        float? price = null;
+                        if (jsonCSGOPrices.lowest_price != null)
+                        {
+                            string priceString = jsonCSGOPrices.lowest_price.ToString().Replace("$", "");
+                            price = float.Parse(priceString, CultureInfo.InvariantCulture);
+                        }
+
                         if (price.HasValue)
                         {
                             count++;

@@ -86,7 +86,7 @@ namespace FlippingSkins
                     charInput.SendKeys(configInformation.keyGuard[i].ToString());
                 }
 
-                System.Threading.Thread.Sleep(2000);
+                System.Threading.Thread.Sleep(3000);
                 var loginIntoSkinsMonkey = wait.Until(driver => driver.FindElement(By.XPath("//input[@class='btn_green_white_innerfade']")));
                 actions.MoveToElement(loginIntoSkinsMonkey).Click().Perform();
             }
