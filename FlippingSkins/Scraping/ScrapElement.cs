@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FlippingSkins
+namespace FlippingSkins.Scraping
 {
     internal abstract class ScrapElement
     {
@@ -12,7 +12,7 @@ namespace FlippingSkins
         protected const float FEECSGOSTEAM = 0.87f;
         public string Name { get; set; }
 
-        public ScrapElement(string name) 
+        public ScrapElement(string name)
         {
             Name = name;
         }
@@ -23,9 +23,9 @@ namespace FlippingSkins
     {
         public float PriceRustSkinsMonkey { get; set; }
         public float PriceRustSteam { get; set; }
-        public double ProcentOfPrice {  get; set; }
+        public double ProcentOfPrice { get; set; }
 
-        public ScrapRust(string name, float priceRustSkinsMonkey) : base (name)
+        public ScrapRust(string name, float priceRustSkinsMonkey) : base(name)
         {
             PriceRustSkinsMonkey = priceRustSkinsMonkey;
         }
