@@ -23,7 +23,6 @@ internal class Program
             ConsoleKeyInfo key = Console.ReadKey();
             IWebDriver webDriver;
             List<Task> tasks = new List<Task>();
-            int sizeOfCollections = 0;
             Console.WriteLine("\n\n");
 
             try
@@ -51,19 +50,15 @@ internal class Program
                         break;
 
                     case '2':
-                        Tuple<float, float> tuple = Utils.SetPriceForCSGO();
-                        List<Tuple<float, float>> listOfPrices = Utils.SetListOfTuples(tuple);
-                        webDriver = LoginWebsites.CreatingWeb(configInformation, 2);
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, listOfPrices);
-                        webDriver.Quit();
+                        float sortPrice = Utils.SetPriceForCSGO();
 
-                        Console.WriteLine(Scrap.scrapCSGO.Count);
-                        Console.ReadKey();
+                        webDriver = LoginWebsites.CreatingWeb(configInformation, 2);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, sortPrice);
+                        webDriver.Quit();
 
                         for(int i = 0; i < Scrap.scrapCSGO.Count; i++)
                         {
                             Scrap.scrapCSGO[i].PriceCSGOSkinsSteam = await SkinsApi.GetPriceAsync(Scrap.scrapCSGO[i].Name, 730);
-                            Console.WriteLine("TEST");
                             Scrap.scrapCSGO[i].SetProcent();
                         }
 
@@ -93,36 +88,6 @@ internal class Program
             Console.Clear();
 
         } while (true);
-    }
-
-    /// <summary>
-    /// Async method to run websites
-    /// </summary>
-    /// <param name="tasks"></param>
-    /// <param name="loops"></param>
-    /// <param name="mode"></param>
-    private async static Task AsyncWebCreator(List<Task> tasks, int loops, int mode)
-    {
-        for (int i = 0; i < loops; i++)
-        {
-            Thread.Sleep(2500);
-            tasks.Add(Task.Run(async () =>
-            {
-                IWebDriver driver = new ChromeDriver(Utils.options);
-                driver.Manage().Window.Maximize();
-                if (mode == 1)
-                {
-                    await Scrap.ScrapPricesFromSteamMarketRust(driver);
-                }
-                else
-                {
-                    await Scrap.ScrapPricesFromSteamMarketCSGO(driver);
-                }
-                driver.Quit();
-            }));
-        }
-
-        await Task.WhenAll(tasks);
     }
 
     /// <summary>

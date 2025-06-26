@@ -68,90 +68,80 @@ namespace FlippingSkins
             } while (isToHighPrice);
             
         }
-        public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver, List<Tuple<float,float>> tuples)
+        public static void ScrapPricesAndNamesFromSkinsMonkey_CSGO(IWebDriver driver, float priceSort)
         {
             Actions action = new Actions(driver);
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
 ;
-
             SetQuality(action, wait, driver);
-            for (int i = 0; i < tuples.Count; i++)
+            SetSorting(action, sorting[2], priceSort);
+            bool isToLowPrice = true;
+            Thread.Sleep(5000);
+            bool firstTime = true;
+
+            do
             {
-                SetSorting(action, sorting[1], tuples[i].Item1, 0.1f);
-                SetSorting(action, sorting[2], tuples[i].Item2);
-                bool isToHighPrice = true;
-                Thread.Sleep(5000);
-                bool firstTime = true;
-                do
+                Thread.Sleep(2000);
+                var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-card__bottom']//div[@class='item-card__info']//div[@class='item-price item-card__price']")));
+                var element = wait.Until(driver => driver.FindElements(By.CssSelector("img.item-image")));
+                IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+
+                int loop = firstTime ? 4 : pricesV1toScrap.Count;
+                firstTime = false;
+
+                for (int j = 0; j < loop; j++)
                 {
-                    Thread.Sleep(2000);
-                    var pricesV1toScrap = wait.Until(driver => driver.FindElements(By.XPath("//div[@class='item-card__bottom']//div[@class='item-card__info']//div[@class='item-price item-card__price']")));
-                    var element = wait.Until(driver => driver.FindElements(By.CssSelector("img.item-image")));
-                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[j]);
+                    price = price.Remove(0, 1).Trim();
+                    string altText = element[j].GetAttribute("alt");
+                    string name = altText.Trim();
+                    ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
 
-                    int loop = firstTime ? 4 : pricesV1toScrap.Count;
-                    firstTime = false;
-
-                    for (int j = 0; j < loop; j++)
+                    if (!scrapCSGO.Any(x => x.Name == name))
                     {
-                        string price = (string)js.ExecuteScript("return arguments[0].textContent;", pricesV1toScrap[j]);
-                        price = price.Remove(0, 1).Trim();
-                        string altText = element[j].GetAttribute("alt");
-                        string name = altText.Trim();
-                        ScrapCSGO scrapElement = new ScrapCSGO(name, float.Parse(price, CultureInfo.InvariantCulture));
-
-                        if (!scrapCSGO.Any(x => x.Name == name))
-                        {
-                            scrapCSGO.Add(scrapElement);
-                        }
-
-                        if (scrapElement.PriceCSGOSkinsMonkey < 0.4 || scrapElement.PriceCSGOSkinsMonkey < tuples[i].Item1)
-                        {
-                            Console.WriteLine(scrapElement.PriceCSGOSkinsMonkey);
-                            Console.WriteLine(tuples[i].Item1);
-                            Console.WriteLine(scrapElement.PriceCSGOSkinsMonkey < tuples[i].Item1);
-                            Console.WriteLine(scrapElement.PriceCSGOSkinsMonkey < 0.4);
-                            isToHighPrice = false;
-                            break;
-                        }
-
+                        scrapCSGO.Add(scrapElement);
                     }
 
-                    int timer = 0;
-                    while(isToHighPrice)
+                    if (scrapElement.PriceCSGOSkinsMonkey < 0.4 || scrapCSGO.Count == Utils.MAX_ITEM_NUMBER)
                     {
-                        try
-                        {
-                            var scrollbar = pricesV1toScrap[19];
-                            action.MoveToElement(scrollbar).Click().Build().Perform();
-                            break;
-                        }
-                        catch
-                        {
-                            timer++;
-                            Thread.Sleep(1000);
-                            if (timer == 15)
-                            {
-                                return;
-                            }
-                        }
-                    };
-
-
-                    for (int j = 0; j < 4; j++)
-                    {
-                        action.SendKeys(Keys.PageDown).Build().Perform();
-                        Thread.Sleep(250);
+                        isToLowPrice = false;
+                        break;
                     }
 
-                    RemoveElement(action, wait, driver);
+                }
+
+                int timer = 0;
+                while (isToLowPrice)
+                {
+                    try
+                    {
+                        var scrollbar = pricesV1toScrap[19];
+                        action.MoveToElement(scrollbar).Click().Build().Perform();
+                        break;
+                    }
+                    catch
+                    {
+                        timer++;
+                        Thread.Sleep(1000);
+                        if (timer == 15)
+                        {
+                            return;
+                        }
+                    }
+                };
 
 
-                } while (isToHighPrice);
+                for (int j = 0; j < 4; j++)
+                {
+                    action.SendKeys(Keys.PageDown).Build().Perform();
+                    Thread.Sleep(250);
+                }
 
-                Console.WriteLine(scrapCSGO.Count);
-            }
+                RemoveElement(action, wait, driver);
+
+
+            } while (isToLowPrice);
 
         }
         public static async Task ScrapPricesFromSteamMarketRust(IWebDriver driver)
@@ -279,11 +269,11 @@ namespace FlippingSkins
             writeItem.SendKeys(Keys.Delete);
             writeItem.SendKeys($"{name}");
         }
-        private static void SetSorting(Actions action, IWebElement sorting, float tupleNumber, float errorNumber = 0)
+        private static void SetSorting(Actions action, IWebElement sorting, float tupleNumber)
         {
             action.Click(sorting).Build().Perform();
             sorting.SendKeys(Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.ArrowRight + Keys.Backspace);
-            sorting.SendKeys((tupleNumber - errorNumber).ToString());
+            sorting.SendKeys((tupleNumber).ToString());
         }
         private static void SetQuality(Actions action, WebDriverWait wait, IWebDriver driver)
         {
