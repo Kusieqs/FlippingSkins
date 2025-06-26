@@ -98,7 +98,7 @@ namespace FlippingSkins.Login
                 actions.MoveToElement(loginButton).Click().Perform();
 
                 System.Threading.Thread.Sleep(3000);
-                GmailGuard();
+                Task.WaitAll(GmailGuard());
                 for (int i = 0; i < 5; i++)
                 {
                     var charInput = wait.Until(driver => driver.FindElement(By.CssSelector("input._3xcXqLVteTNHmk-gh9W65d[value='']")));
@@ -117,7 +117,7 @@ namespace FlippingSkins.Login
         /// <summary>
         /// Downwriting Steam Guard
         /// </summary>
-        private static async void GmailGuard()
+        private static async Task GmailGuard()
         {
             var secrets = new ClientSecrets
             {

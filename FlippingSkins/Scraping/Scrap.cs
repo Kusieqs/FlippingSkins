@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
+using FlippingSkins.Utils;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
@@ -76,8 +77,8 @@ namespace FlippingSkins.Scraping
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
             var sorting = wait.Until(driver => driver.FindElements(By.XPath("//input[@class='form-input__core']")));
             ;
-            SetQuality(action, wait, driver);
             SetSorting(action, sorting[2], priceSort);
+            SetQuality(action, wait, driver);
             bool isToLowPrice = true;
             Thread.Sleep(5000);
             bool firstTime = true;
@@ -105,7 +106,7 @@ namespace FlippingSkins.Scraping
                         scrapCSGO.Add(scrapElement);
                     }
 
-                    if (scrapElement.PriceCSGOSkinsMonkey < 0.4 || scrapCSGO.Count == Utils.MAX_ITEM_NUMBER)
+                    if (scrapElement.PriceCSGOSkinsMonkey < 0.4 || scrapCSGO.Count == Config.MAX_ITEM_NUMBER)
                     {
                         isToLowPrice = false;
                         break;
@@ -156,7 +157,6 @@ namespace FlippingSkins.Scraping
         private static void SetSorting(Actions action, IWebElement sorting, float tupleNumber)
         {
             action.Click(sorting).Build().Perform();
-            sorting.SendKeys(Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.ArrowRight + Keys.Backspace);
             sorting.SendKeys(tupleNumber.ToString());
         }
 

@@ -12,11 +12,12 @@ namespace FlippingSkins.Utils
         public static ChromeOptions options = new ChromeOptions();
         public const int MAX_ITEM_NUMBER = 200;
         public const string LOGIN_TO_STEAM = "flipingSkins";
-        public const string PASSWORD_TO_STEAM = "flippingskins@gmail.com";
+        public const string PASSWORD_TO_STEAM = "vR5QKwJ252H%kpu";
         public const string GMAIL = "flippingskins@gmail.com";
         public const string PASSWORD_TO_GMAIL = "FlippingSkins123";
         public const string GOOGLE_CLIENT_ID = "71031490539-phrkft1pgbmffljk7vsgr1mcke5o2hl9.apps.googleusercontent.com";
         public const string GOOGLE_CLIENT_SECRET = "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";
+
 
         /// <summary>
         /// Setting config to login into steam and gmail
