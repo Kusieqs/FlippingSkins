@@ -12,9 +12,11 @@ This project is focused on scraping two well-known e-commerce websites to track 
 
 ## Notes
 
-- All login credentials used in this project are for test accounts only and were created specifically for scraping purposes.
-- These accounts are not linked to any personal data or real purchases.
-- Gmail addresses and passwords included in the code are non-essential and can be disregarded.
+All login credentials used in this project are for testing purposes only.  
+They were created specifically for this tool and **can be freely used** by anyone reviewing or running the project.  
+These accounts are not connected to any personal data, payment methods, or private information.  
+Gmail addresses and passwords included in the code are safe to share and reuse for demonstration or testing.
+
 
 ## Disclaimer
 
