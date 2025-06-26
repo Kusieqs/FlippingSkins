@@ -1,17 +1,23 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
-using FlippingSkins;
+using FlippingSkins.Api;
+using FlippingSkins.Login;
+using FlippingSkins.Scraping;
+using FlippingSkins.Utils;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 
 internal class Program
 {
-    private static async Task Main(string[] args)
+    public static IWebDriver? webDriver;
+    public static ConfigInformation? configInformation;
+
+    private static void Main(string[] args)
     {
-        ConfigInformation configInformation = Utils.SettingConfig();
-        Utils.StartConfig();
+        configInformation = Config.SetConfig();
+        Config.StartConfig();
 
         do
         {
@@ -21,8 +27,6 @@ internal class Program
 
             Console.Write("\n\n1. Start scraping prices rust STEAM->SKINSMONKEY\n2. Start scraping prices csgo SKINSMONKEY->STEAM\n3. Information\n4. Exit\n\nNumber: ");
             ConsoleKeyInfo key = Console.ReadKey();
-            IWebDriver webDriver;
-            List<Task> tasks = new List<Task>();
             Console.WriteLine("\n\n");
 
             try
@@ -30,46 +34,10 @@ internal class Program
                 switch (key.KeyChar)
                 {
                     case '1':
-                        webDriver = LoginWebsites.CreatingWeb(configInformation, 1);
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_Rust(webDriver);
-                        webDriver.Quit();
-
-                        for(int i = 0; i < Scrap.scrapRust.Count; i ++)
-                        {
-                            Scrap.scrapRust[i].PriceRustSteam = await SkinsApi.GetPriceAsync(Scrap.scrapRust[i].Name, 252490);
-                            Scrap.scrapRust[i].SetProcent();
-                        }
-
-                        List<ScrapRust> bestDealsRust = Scrap.scrapRust.
-                            OrderByDescending(x => x.ProcentOfPrice).
-                            Take(100).
-                            ToList();
-
-                        bestDealsRust.RemoveAll(x => x.PriceRustSteam == 0 || x.PriceRustSkinsMonkey == 0);
-                        ShowingDeals("Best deals Steam -> SkinsMonkey:", bestDealsRust.Cast<ScrapElement>().ToList());
+                        RustBestDeals();
                         break;
-
                     case '2':
-                        float sortPrice = Utils.SetPriceForCSGO();
-
-                        webDriver = LoginWebsites.CreatingWeb(configInformation, 2);
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, sortPrice);
-                        webDriver.Quit();
-
-                        for(int i = 0; i < Scrap.scrapCSGO.Count; i++)
-                        {
-                            Scrap.scrapCSGO[i].PriceCSGOSkinsSteam = await SkinsApi.GetPriceAsync(Scrap.scrapCSGO[i].Name, 730);
-                            Scrap.scrapCSGO[i].SetProcent();
-                        }
-
-
-                        List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.
-                            OrderByDescending(x => x.ProcentOfPrice).
-                            Take(100).
-                            ToList();
-
-                        bestDealsCsgo.RemoveAll(x => x.PriceCSGOSkinsMonkey == 0 || x.PriceCSGOSkinsSteam == 0);
-                        ShowingDeals("Best deals SkinsMonkey -> Steam:", bestDealsCsgo.Cast<ScrapElement>().ToList());
+                        CSGOBestDeals();
                         break;
                     case '3':
                         break;
@@ -80,14 +48,64 @@ internal class Program
             }
             catch (Exception ex)
             {
-                Utils.ExceptionMessage(ex);
+                ExceptionMessage(ex);
             }
 
-            tasks.Clear();
             Console.ReadKey();
             Console.Clear();
 
         } while (true);
+    }
+
+    /// <summary>
+    /// Searching best deals for RUST items
+    /// </summary>
+    private async static void RustBestDeals()
+    {
+        webDriver = LoginWebsites.CreatingWeb(configInformation, 1);
+        Scrap.ScrapPricesAndNamesFromSkinsMonkey_Rust(webDriver);
+        webDriver.Quit();
+
+        for (int i = 0; i < Scrap.scrapRust.Count; i++)
+        {
+            Scrap.scrapRust[i].PriceRustSteam = await SkinsApi.GetPriceAsync(Scrap.scrapRust[i].Name, 252490);
+            Scrap.scrapRust[i].SetProcent();
+        }
+
+        List<ScrapRust> bestDealsRust = Scrap.scrapRust.
+            OrderByDescending(x => x.ProcentOfPrice).
+            Take(100).
+            ToList();
+
+        bestDealsRust.RemoveAll(x => x.PriceRustSteam == 0 || x.PriceRustSkinsMonkey == 0);
+        ShowingDeals("Best deals Steam -> SkinsMonkey:", bestDealsRust.Cast<ScrapElement>().ToList());
+    }
+
+    /// <summary>
+    /// Searching best deals for CSGO items
+    /// </summary>
+    private async static void CSGOBestDeals()
+    {
+        float sortPrice = Scrap.SetPriceForCSGO();
+
+        webDriver = LoginWebsites.CreatingWeb(configInformation, 2);
+        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, sortPrice);
+        webDriver.Quit();
+
+        for (int i = 0; i < Scrap.scrapCSGO.Count; i++)
+        {
+            Scrap.scrapCSGO[i].PriceCSGOSkinsSteam = await SkinsApi.GetPriceAsync(Scrap.scrapCSGO[i].Name, 730);
+            Scrap.scrapCSGO[i].SetProcent();
+        }
+
+
+        List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.
+            OrderByDescending(x => x.ProcentOfPrice).
+            Take(100).
+            ToList();
+
+        bestDealsCsgo.RemoveAll(x => x.PriceCSGOSkinsMonkey == 0 || x.PriceCSGOSkinsSteam == 0);
+        ShowingDeals("Best deals SkinsMonkey -> Steam:", bestDealsCsgo.Cast<ScrapElement>().ToList());
     }
 
     /// <summary>
@@ -104,6 +122,21 @@ internal class Program
         {
             item.Description();
         }
+        Console.ReadKey();
+    }
+
+    /// <summary>
+    /// Exception message
+    /// </summary>
+    /// <param name="ex"></param>
+    public static void ExceptionMessage(Exception ex)
+    {
+        Console.Clear();
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("ERROR!!!");
+        Console.ResetColor();
+        Console.WriteLine(ex.ToString());
+        Console.WriteLine("Click enter to continue");
         Console.ReadKey();
     }
 

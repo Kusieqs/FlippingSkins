@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FlippingSkins
+namespace FlippingSkins.Utils
 {
     public class ConfigInformation
     {
@@ -13,7 +13,7 @@ namespace FlippingSkins
         public string loginToGmail { get; private set; }
         public string passwordToGmail { get; private set; }
         public string keyGuard { get; set; }
-        public ConfigInformation(string loginToSteam, string passwordToSteam, string loginToGmail, string passwordToGmail) 
+        public ConfigInformation(string loginToSteam, string passwordToSteam, string loginToGmail, string passwordToGmail)
         {
             this.loginToSteam = loginToSteam;
             this.passwordToSteam = passwordToSteam;

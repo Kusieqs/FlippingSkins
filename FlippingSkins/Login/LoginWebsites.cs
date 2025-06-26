@@ -14,17 +14,25 @@ using Google.Apis.Util.Store;
 using Google.Apis.Services;
 using Google.Apis.Gmail.v1.Data;
 using System.Text.RegularExpressions;
+using FlippingSkins.Utils;
 
-namespace FlippingSkins
+namespace FlippingSkins.Login
 {
     internal static class LoginWebsites
     {
         private static ConfigInformation? configInformation;
+
+        /// <summary>
+        /// Opening Skinsmonkey page
+        /// </summary>
+        /// <param name="config"></param>
+        /// <param name="mode"></param>
+        /// <returns>IWebDriver with configuration</returns>
         public static IWebDriver CreatingWeb(ConfigInformation config, int mode)
         {
             configInformation = config;
 
-            IWebDriver driver = new ChromeDriver(Utils.options);
+            IWebDriver driver = new ChromeDriver(Config.options);
             driver.Manage().Window.Maximize();
             driver.Navigate().GoToUrl("https://www.skinsmonkey.com");
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
@@ -34,7 +42,13 @@ namespace FlippingSkins
             return driver;
         }
 
-        private static void LoginToSkinsMonkey(IWebDriver driver,WebDriverWait wait, int mode)
+        /// <summary>
+        /// Login into skinsmonkey page
+        /// </summary>
+        /// <param name="driver"></param>
+        /// <param name="wait"></param>
+        /// <param name="mode"></param>
+        private static void LoginToSkinsMonkey(IWebDriver driver, WebDriverWait wait, int mode)
         {
             var loginButton = wait.Until(driver => driver.FindElement(By.XPath("//div[@class='base-button auth-button primary']")));
             Actions actions = new Actions(driver);
@@ -50,7 +64,7 @@ namespace FlippingSkins
             System.Threading.Thread.Sleep(500);
 
 
-            if(mode == 1)
+            if (mode == 1)
             {
                 var element = wait.Until(driver => driver.FindElement(By.XPath("//img[@alt='Rust']")));
                 actions.MoveToElement(element).Click().Perform();
@@ -63,6 +77,11 @@ namespace FlippingSkins
             System.Threading.Thread.Sleep(1500);
         }
 
+        /// <summary>
+        /// Login into steam page
+        /// </summary>
+        /// <param name="driver"></param>
+        /// <param name="wait"></param>
         private static async void LoginToSteam(IWebDriver driver, WebDriverWait wait)
         {
             try
@@ -80,7 +99,7 @@ namespace FlippingSkins
 
                 System.Threading.Thread.Sleep(3000);
                 Task.WaitAll(GmailGuard());
-                for(int i = 0; i < 5; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     var charInput = wait.Until(driver => driver.FindElement(By.CssSelector("input._3xcXqLVteTNHmk-gh9W65d[value='']")));
                     charInput.SendKeys(configInformation.keyGuard[i].ToString());
@@ -90,26 +109,20 @@ namespace FlippingSkins
                 var loginIntoSkinsMonkey = wait.Until(driver => driver.FindElement(By.XPath("//input[@class='btn_green_white_innerfade']")));
                 actions.MoveToElement(loginIntoSkinsMonkey).Click().Perform();
             }
-            catch (WebDriverTimeoutException)
-            {
-                Console.WriteLine("Nie udało się załadować strony logowania Steam lub nie znaleziono wymaganych elementów.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error " + ex);
-            }
+            catch (WebDriverTimeoutException) { }
+            catch (Exception ex) { }
 
         }
 
+        /// <summary>
+        /// Downwriting Steam Guard
+        /// </summary>
         private static async Task GmailGuard()
         {
-            string googleClientId = "71031490539-phrkft1pgbmffljk7vsgr1mcke5o2hl9.apps.googleusercontent.com";
-            string googleClientSecret = "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";
-
             var secrets = new ClientSecrets
             {
-                ClientId = googleClientId,
-                ClientSecret = googleClientSecret
+                ClientId = Config.GOOGLE_CLIENT_ID,
+                ClientSecret = Config.GOOGLE_CLIENT_SECRET,
             };
 
             var scopes = new[] { GmailService.Scope.GmailReadonly };
@@ -152,6 +165,11 @@ namespace FlippingSkins
             return;
         }
 
+        /// <summary>
+        /// Getting string from mail
+        /// </summary>
+        /// <param name="part"></param>
+        /// <returns>Mail body with steam guard</returns>
         public static string GetPlainTextFromMessage(MessagePart part)
         {
             if (part == null)
@@ -160,7 +178,7 @@ namespace FlippingSkins
             if (part.MimeType == "text/plain" && part.Body?.Data != null)
             {
                 string base64 = part.Body.Data.Replace("-", "+").Replace("_", "/");
-                byte[] data = Convert.FromBase64String(base64); 
+                byte[] data = Convert.FromBase64String(base64);
                 return Encoding.UTF8.GetString(data);
             }
 
@@ -177,6 +195,11 @@ namespace FlippingSkins
             return "";
         }
 
+        /// <summary>
+        /// Getting code from body mail
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns>Steam Guard</returns>
         private static string GetCode(string message)
         {
             Match match = Regex.Match(message, @"([0-9A-Z]{5})");

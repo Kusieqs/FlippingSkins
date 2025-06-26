@@ -1,12 +1,19 @@
 ﻿using System.Globalization;
 using Newtonsoft.Json;
 
-namespace FlippingSkins
+namespace FlippingSkins.Api
 {
     public static class SkinsApi
     {
         const int CURRNECY = 1;
         public static int count = 0;
+
+        /// <summary>
+        /// Getting price from api
+        /// </summary>
+        /// <param name="nameOfItem"></param>
+        /// <param name="appid"></param>
+        /// <returns>The lowest price to get item</returns>
         public static async Task<float> GetPriceAsync(string nameOfItem, int appid)
         {
             string url = $"https://steamcommunity.com/market/priceoverview/?"
