@@ -13,6 +13,7 @@ using Google.Apis.Gmail.v1;
 using Google.Apis.Util.Store;
 using Google.Apis.Services;
 using Google.Apis.Gmail.v1.Data;
+using System.Text.RegularExpressions;
 
 namespace FlippingSkins
 {
@@ -77,15 +78,15 @@ namespace FlippingSkins
                 Actions actions = new Actions(driver);
                 actions.MoveToElement(loginButton).Click().Perform();
 
+                System.Threading.Thread.Sleep(3000);
                 Task.WaitAll(GmailGuard());
-                System.Threading.Thread.Sleep(1000);
                 for(int i = 0; i < 5; i++)
                 {
                     var charInput = wait.Until(driver => driver.FindElement(By.CssSelector("input._3xcXqLVteTNHmk-gh9W65d[value='']")));
                     charInput.SendKeys(configInformation.keyGuard[i].ToString());
                 }
 
-                System.Threading.Thread.Sleep(2000);
+                System.Threading.Thread.Sleep(3000);
                 var loginIntoSkinsMonkey = wait.Until(driver => driver.FindElement(By.XPath("//input[@class='btn_green_white_innerfade']")));
                 actions.MoveToElement(loginIntoSkinsMonkey).Click().Perform();
             }
@@ -142,11 +143,7 @@ namespace FlippingSkins
                 var headers = fullMessage.Payload.Headers;
                 var fromHeader = headers.FirstOrDefault(h => h.Name == "From");
                 string messageBody = GetPlainTextFromMessage(fullMessage.Payload);
-
-
-                int indeks = messageBody.IndexOf("Kod logowania");
-                string code = messageBody.Substring(indeks+15, 5);
-                configInformation.keyGuard = code;
+                configInformation.keyGuard = GetCode(messageBody);
             }
             else
             {
@@ -162,13 +159,11 @@ namespace FlippingSkins
 
             if (part.MimeType == "text/plain" && part.Body?.Data != null)
             {
-                // Gmail koduje treść w base64url (nie standard base64!)
                 string base64 = part.Body.Data.Replace("-", "+").Replace("_", "/");
-                byte[] data = Convert.FromBase64String(base64);
+                byte[] data = Convert.FromBase64String(base64); 
                 return Encoding.UTF8.GetString(data);
             }
 
-            // Jeśli to multipart, przeszukaj podczęści
             if (part.Parts != null)
             {
                 foreach (var subPart in part.Parts)
@@ -180,6 +175,18 @@ namespace FlippingSkins
             }
 
             return "";
+        }
+
+        private static string GetCode(string message)
+        {
+            Match match = Regex.Match(message, @"([0-9A-Z]{5})");
+            string kodLogowania = "";
+
+            if (match.Success)
+            {
+                kodLogowania = match.Groups[1].Value;
+            }
+            return kodLogowania;
         }
     }
 }

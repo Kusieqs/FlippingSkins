@@ -23,7 +23,6 @@ internal class Program
             ConsoleKeyInfo key = Console.ReadKey();
             IWebDriver webDriver;
             List<Task> tasks = new List<Task>();
-            int sizeOfCollections = 0;
             Console.WriteLine("\n\n");
 
             try
@@ -35,18 +34,11 @@ internal class Program
                         Scrap.ScrapPricesAndNamesFromSkinsMonkey_Rust(webDriver);
                         webDriver.Quit();
 
-                        List<List<ScrapRust>> collectionsRust = new List<List<ScrapRust>>();
-                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapRust.Count / Utils.COUNTWEB);
-                        
-                        for (int i = 0; i < Utils.COUNTWEB; i++)
+                        for(int i = 0; i < Scrap.scrapRust.Count; i ++)
                         {
-                            var collection = Scrap.scrapRust.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
-                            collectionsRust.Add(collection);
+                            Scrap.scrapRust[i].PriceRustSteam = await SkinsApi.GetPriceAsync(Scrap.scrapRust[i].Name, 252490);
+                            Scrap.scrapRust[i].SetProcent();
                         }
-
-                        Scrap.scrapPriceFromRust = collectionsRust;
-                        await AsyncWebCreator(tasks, collectionsRust.Count, 1);
-                        Scrap.counter = 0;
 
                         List<ScrapRust> bestDealsRust = Scrap.scrapRust.
                             OrderByDescending(x => x.ProcentOfPrice).
@@ -58,26 +50,18 @@ internal class Program
                         break;
 
                     case '2':
-                        Tuple<float, float> tuple = Utils.SetPriceForCSGO();
-                        List<Tuple<float, float>> listOfPrices = Utils.SetListOfTuples(tuple);
+                        float sortPrice = Utils.SetPriceForCSGO();
+
                         webDriver = LoginWebsites.CreatingWeb(configInformation, 2);
-
-
-                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, listOfPrices);
+                        Scrap.ScrapPricesAndNamesFromSkinsMonkey_CSGO(webDriver, sortPrice);
                         webDriver.Quit();
 
-                        List<List<ScrapCSGO>> collectionsCSGO = new List<List<ScrapCSGO>>();
-                        sizeOfCollections = (int)Math.Ceiling(Scrap.scrapCSGO.Count / Utils.COUNTWEB);
-
-                        for (int i = 0; i < Utils.COUNTWEB; i++)
+                        for(int i = 0; i < Scrap.scrapCSGO.Count; i++)
                         {
-                            var collection = Scrap.scrapCSGO.Skip(i * sizeOfCollections).Take(sizeOfCollections).ToList();
-                            collectionsCSGO.Add(collection);
+                            Scrap.scrapCSGO[i].PriceCSGOSkinsSteam = await SkinsApi.GetPriceAsync(Scrap.scrapCSGO[i].Name, 730);
+                            Scrap.scrapCSGO[i].SetProcent();
                         }
 
-                        Scrap.scrapPriceFromCSGO = collectionsCSGO;
-                        await AsyncWebCreator(tasks, collectionsCSGO.Count, 2);
-                        Scrap.counter = 0;
 
                         List<ScrapCSGO> bestDealsCsgo = Scrap.scrapCSGO.
                             OrderByDescending(x => x.ProcentOfPrice).
@@ -104,36 +88,6 @@ internal class Program
             Console.Clear();
 
         } while (true);
-    }
-
-    /// <summary>
-    /// Async method to run websites
-    /// </summary>
-    /// <param name="tasks"></param>
-    /// <param name="loops"></param>
-    /// <param name="mode"></param>
-    private async static Task AsyncWebCreator(List<Task> tasks, int loops, int mode)
-    {
-        for (int i = 0; i < loops; i++)
-        {
-            Thread.Sleep(2500);
-            tasks.Add(Task.Run(async () =>
-            {
-                IWebDriver driver = new ChromeDriver(Utils.options);
-                driver.Manage().Window.Maximize();
-                if (mode == 1)
-                {
-                    await Scrap.ScrapPricesFromSteamMarketRust(driver);
-                }
-                else
-                {
-                    await Scrap.ScrapPricesFromSteamMarketCSGO(driver);
-                }
-                driver.Quit();
-            }));
-        }
-
-        await Task.WhenAll(tasks);
     }
 
     /// <summary>
