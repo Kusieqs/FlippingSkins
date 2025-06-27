@@ -106,7 +106,7 @@ namespace FlippingSkins.Scraping
                         scrapCSGO.Add(scrapElement);
                     }
 
-                    if (scrapElement.PriceCSGOSkinsMonkey < 0.4 || scrapCSGO.Count == Config.MAX_ITEM_NUMBER)
+                    if (scrapElement.PriceCSGOSkinsMonkey < 0.3 || scrapCSGO.Count == Config.MAX_ITEM_NUMBER)
                     {
                         isToLowPrice = false;
                         break;
