@@ -17,7 +17,6 @@ internal class Program
     private static void Main(string[] args)
     {
         configInformation = Config.SetConfig();
-        Config.StartConfig();
 
         do
         {
@@ -25,10 +24,15 @@ internal class Program
             Console.WriteLine("################ MENU ################");
             Console.WriteLine("######################################");
 
-            Console.Write("\n\n1. Start scraping prices rust STEAM->SKINSMONKEY\n2. Start scraping prices csgo SKINSMONKEY->STEAM\n3. Information\n4. Exit\n\nNumber: ");
+            Console.Write("\n\n1. Start scraping prices rust STEAM->SKINSMONKEY" +
+                "\n2. Start scraping prices csgo SKINSMONKEY->STEAM" +
+                "\n3. Information" +
+                "\n4. Exit" +
+                "\n\nNumber: ");
             ConsoleKeyInfo key = Console.ReadKey();
             Console.WriteLine("\n\n");
 
+            Config.StartConfig();
             try
             {
                 switch (key.KeyChar)
@@ -40,6 +44,7 @@ internal class Program
                         CSGOBestDeals();
                         break;
                     case '3':
+                        Information();
                         break;
                     case '4':
                         Environment.Exit(0);
@@ -106,6 +111,21 @@ internal class Program
 
         bestDealsCsgo.RemoveAll(x => x.PriceCSGOSkinsMonkey == 0 || x.PriceCSGOSkinsSteam == 0);
         ShowingDeals("Best deals SkinsMonkey -> Steam:", bestDealsCsgo.Cast<ScrapElement>().ToList());
+    }
+
+    private static void Information()
+    {
+        Console.Clear();
+        string description =
+            "The main purpose of this application is to generate profit by flipping skins between two platforms: Steam and SkinsMonkey.\n\n" +
+            "The first option focuses on flipping *Rust* skins from Steam to SkinsMonkey. It will display the most profitable deals you can make, taking into account all applicable taxes and fees.\n\n" +
+            "The second option focuses on flipping *CS:GO* skins from SkinsMonkey to Steam. Similarly, it shows you the best opportunities for profit, with all costs already factored in.\n\n" +
+            "Both options calculate net profit after fees, ensuring that every deal shown is 100% profitable.\n\n" +
+            "Whether you're a seasoned trader or just getting started, this tool helps you make informed and profitable decisions with minimal effort.";
+
+        Console.WriteLine(description);
+        Console.ReadKey();
+        Console.Clear();
     }
 
     /// <summary>
