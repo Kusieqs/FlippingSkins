@@ -56,7 +56,7 @@ internal class Program
                 ExceptionMessage(ex);
             }
 
-            Console.ReadKey();
+            SkinsApi.isItMaximumRequest = false;
             Console.Clear();
 
         } while (true);
@@ -141,6 +141,13 @@ internal class Program
         foreach (var item in bestDeals)
         {
             item.Description();
+        }
+
+        if(SkinsApi.isItMaximumRequest)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("\n\nError with maximum request sent");
+            Console.ResetColor();
         }
         Console.ReadKey();
     }

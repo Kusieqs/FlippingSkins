@@ -10,7 +10,7 @@ namespace FlippingSkins.Utils
     public static class Config
     {
         public static ChromeOptions? options;
-        public const int MAX_ITEM_NUMBER = 500;
+        public const int MAX_ITEM_NUMBER = 300;
         public const string LOGIN_TO_STEAM = "flipingSkins";
         public const string PASSWORD_TO_STEAM = "vR5QKwJ252H%kpu";
         public const string GMAIL = "flippingskins@gmail.com";
